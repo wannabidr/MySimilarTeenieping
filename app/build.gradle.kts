@@ -16,6 +16,7 @@ android {
         targetSdk = 35
         versionCode = 1
         versionName = "0.0.0"
+        // 배포할 일이 있으면 proguard rule 세팅할 것
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
