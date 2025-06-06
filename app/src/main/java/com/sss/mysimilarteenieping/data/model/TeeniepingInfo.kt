@@ -12,4 +12,13 @@ data class TeeniepingInfo(
     val description: String = "",   // 티니핑 특징 설명 (필요시 ChatGPT 연동하여 생성)
     val imagePath: String = "",     // 티니핑 이미지 리소스 경로, assets 내 경로, 또는 Firebase Storage URL
     val details: String? = null // (Optional) 티니핑 관련 추가 정보 (등장 에피소드 등)
-) 
+) {
+    // Firestore 연동을 위한 기본 생성자 (필수)
+    constructor() : this(
+        id = "",
+        name = "",
+        description = "",
+        imagePath = "",
+        details = null
+    )
+} 

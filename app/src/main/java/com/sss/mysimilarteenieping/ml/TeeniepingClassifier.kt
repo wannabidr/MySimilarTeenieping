@@ -20,7 +20,7 @@ import java.nio.channels.FileChannel
  */
 class TeeniepingClassifier(
     private val context: Context,
-    private val modelPath: String = "keras_model_term_04.tflite", // assets 폴더 내 모델 파일 경로
+    private val modelPath: String = "keras_model_term_05.tflite", // assets 폴더 내 모델 파일 경로
     private val labelPath: String = "teenieping_labels.txt"  // assets 폴더 내 레이블 파일 경로
 ) {
 

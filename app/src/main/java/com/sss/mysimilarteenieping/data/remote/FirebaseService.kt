@@ -71,11 +71,35 @@ class FirebaseService(
      */
     suspend fun getAnalysisResultById(id: String): Result<AnalysisResult?> {
         Log.d(TAG, "getAnalysisResultById: triggered, id = $id")
+        Log.d(TAG, "Collection path: ${historyCollection.path}")
         return try {
+            Log.d(TAG, "Attempting to get document...")
             val documentSnapshot = historyCollection.document(id).get().await()
-            val result = documentSnapshot.toObject(AnalysisResult::class.java)
+            Log.d(TAG, "Document exists: ${documentSnapshot.exists()}")
+            Log.d(TAG, "Document data: ${documentSnapshot.data}")
+            
+            val result = try {
+                documentSnapshot.toObject(AnalysisResult::class.java)
+            } catch (parseException: Exception) {
+                Log.e(TAG, "Failed to parse document to AnalysisResult: ${parseException.message}", parseException)
+                Log.e(TAG, "Raw document data: ${documentSnapshot.data}")
+                null
+            }
+            Log.d(TAG, "Parsed result: $result")
+            
+            if (result == null && documentSnapshot.exists()) {
+                Log.w(TAG, "Document exists but failed to parse to AnalysisResult")
+                Log.w(TAG, "Raw document data: ${documentSnapshot.data}")
+                Log.w(TAG, "Document ID: ${documentSnapshot.id}")
+            }
+            
             Result.success(result)
         } catch (e: Exception) {
+            Log.e(TAG, "Error getting document ID '$id': ${e.message}", e)
+            Log.e(TAG, "Exception type: ${e.javaClass.simpleName}")
+            if (e.cause != null) {
+                Log.e(TAG, "Cause: ${e.cause?.message}")
+            }
             Result.failure(e)
         }
     }
