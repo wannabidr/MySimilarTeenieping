@@ -5,6 +5,9 @@ import android.util.Log
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.storage.FirebaseStorage
 import com.sss.mysimilarteenieping.data.model.AnalysisResult
+import com.sss.mysimilarteenieping.data.model.TeeniepingInfo
+import com.sss.mysimilarteenieping.data.model.UserImage
+import com.sss.mysimilarteenieping.data.model.ShoppingLink
 import kotlinx.coroutines.tasks.await
 import java.util.UUID
 
@@ -67,7 +70,9 @@ class FirebaseService(
         return try {
             val querySnapshot = historyCollection.orderBy("analysisTimestamp", com.google.firebase.firestore.Query.Direction.DESCENDING).get().await()
             val results = querySnapshot.documents.mapNotNull { document ->
-                document.toObject(AnalysisResult::class.java)?.copy(id = document.id)
+                document.data?.let { data ->
+                    parseAnalysisResult(data, document.id)
+                }
             }
             Result.success(results)
         } catch (e: Exception) {
@@ -88,7 +93,13 @@ class FirebaseService(
             Log.d(TAG, "Document data: ${documentSnapshot.data}")
             
             val result = try {
-                documentSnapshot.toObject(AnalysisResult::class.java)?.copy(id = documentSnapshot.id)
+                // 수동 파싱으로 타입 변환 문제 해결
+                val data = documentSnapshot.data
+                if (data != null) {
+                    parseAnalysisResult(data, documentSnapshot.id)
+                } else {
+                    null
+                }
             } catch (parseException: Exception) {
                 Log.e(TAG, "Failed to parse document to AnalysisResult: ${parseException.message}", parseException)
                 Log.e(TAG, "Raw document data: ${documentSnapshot.data}")
@@ -123,6 +134,68 @@ class FirebaseService(
             Result.success(Unit)
         } catch (e: Exception) {
             Result.failure(e)
+        }
+    }
+    
+    /**
+     * Firestore 데이터를 수동으로 AnalysisResult로 파싱합니다.
+     * 타입 변환 문제(특히 Int/Long)를 해결하기 위해 사용됩니다.
+     */
+    private fun parseAnalysisResult(data: Map<String, Any>, documentId: String): AnalysisResult? {
+        return try {
+            Log.d(TAG, "Manual parsing started for document: $documentId")
+            
+            // UserImage 파싱
+            val userImageMap = data["userImage"] as? Map<String, Any> ?: return null
+            val userImage = UserImage(
+                localFilePath = userImageMap["localFilePath"] as? String ?: "",
+                fbFilePath = userImageMap["fbFilePath"] as? String ?: "",
+                createdAt = (userImageMap["createdAt"] as? Number)?.toLong() ?: 0L
+            )
+            
+            // TeeniepingInfo 파싱 (Int/Long 변환 처리)
+            val teeniepingMap = data["similarTeenieping"] as? Map<String, Any> ?: return null
+            val teeniepingId = when (val idValue = teeniepingMap["id"]) {
+                is Number -> idValue.toInt()
+                is String -> idValue.toIntOrNull() ?: -1
+                else -> -1
+            }
+            
+            val teenieping = TeeniepingInfo(
+                id = teeniepingId,
+                name = teeniepingMap["name"] as? String ?: "",
+                description = teeniepingMap["description"] as? String ?: "",
+                imagePath = teeniepingMap["imagePath"] as? String ?: "",
+                details = teeniepingMap["details"] as? String
+            )
+            
+            // ShoppingLinks 파싱
+            val shoppingLinksData = data["shoppingLinks"] as? List<Map<String, Any>> ?: emptyList()
+            val shoppingLinks = shoppingLinksData.map { linkMap ->
+                ShoppingLink(
+                    itemName = linkMap["itemName"] as? String ?: "",
+                    linkUrl = linkMap["linkUrl"] as? String ?: "",
+                    itemImageUrl = linkMap["itemImageUrl"] as? String ?: "",
+                    storeName = linkMap["storeName"] as? String ?: ""
+                )
+            }
+            
+            // AnalysisResult 생성
+            val analysisResult = AnalysisResult(
+                id = documentId,
+                userImage = userImage,
+                similarTeenieping = teenieping,
+                similarityScore = (data["similarityScore"] as? Number)?.toFloat() ?: 0.0f,
+                analysisTimestamp = (data["analysisTimestamp"] as? Number)?.toLong() ?: 0L,
+                shoppingLinks = shoppingLinks
+            )
+            
+            Log.d(TAG, "Successfully parsed AnalysisResult with ${shoppingLinks.size} shopping links")
+            analysisResult
+            
+        } catch (e: Exception) {
+            Log.e(TAG, "Error in manual parsing", e)
+            null
         }
     }
     

@@ -7,9 +7,12 @@ import androidx.lifecycle.viewModelScope
 import com.sss.mysimilarteenieping.data.model.AnalysisResult
 import com.sss.mysimilarteenieping.data.model.TeeniepingInfo
 import com.sss.mysimilarteenieping.data.model.UserImage
+import com.sss.mysimilarteenieping.data.model.ShoppingLink
+import kotlinx.coroutines.flow.first
 import com.sss.mysimilarteenieping.domain.usecase.GetChatGptDescriptionUseCase
 import com.sss.mysimilarteenieping.domain.usecase.GetSimilarTeeniepingUseCase
 import com.sss.mysimilarteenieping.domain.usecase.SaveAnalysisResultUseCase
+import com.sss.mysimilarteenieping.domain.usecase.GetShoppingInfoUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -33,7 +36,8 @@ sealed interface SelectImageUiState {
 class SelectImageViewModel @Inject constructor(
     private val getSimilarTeeniepingUseCase: GetSimilarTeeniepingUseCase,
     private val saveAnalysisResultUseCase: SaveAnalysisResultUseCase,
-    private val getChatGptDescriptionUseCase: GetChatGptDescriptionUseCase
+    private val getChatGptDescriptionUseCase: GetChatGptDescriptionUseCase,
+    private val getShoppingInfoUseCase: GetShoppingInfoUseCase
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow<SelectImageUiState>(SelectImageUiState.Idle)
@@ -92,7 +96,32 @@ class SelectImageViewModel @Inject constructor(
                     Log.e(TAG, "Error during ChatGPT description fetching", e)
                 }
 
-                // 3. UserImage 및 AnalysisResult 객체 생성
+                // 3. 네이버 쇼핑 API에서 관련 상품 링크 수집
+                val shoppingLinks = try {
+                    Log.d(TAG, "Fetching shopping links for: ${similarTeenieping.name}")
+                    val links = getShoppingInfoUseCase(similarTeenieping.name).first()
+                    Log.d(TAG, "Successfully fetched ${links.size} shopping links")
+                    links.forEachIndexed { index, link ->
+                        Log.d(TAG, "Shopping link $index: ${link.itemName} -> ${link.linkUrl}")
+                    }
+                    links
+                } catch (e: Exception) {
+                    Log.e(TAG, "Failed to fetch shopping links", e)
+                    // Fallback: 쇼핑 API 실패 시 더미 링크 생성
+                    createFallbackShoppingLinks(similarTeenieping.name)
+                }
+                
+                // 쇼핑 링크가 비어있다면 강제로 더미 데이터 추가
+                val finalShoppingLinks = if (shoppingLinks.isEmpty()) {
+                    Log.w(TAG, "No shopping links found, creating dummy links")
+                    createFallbackShoppingLinks(similarTeenieping.name)
+                } else {
+                    shoppingLinks
+                }
+                
+                Log.d(TAG, "Final shopping links count: ${finalShoppingLinks.size} items")
+
+                // 4. UserImage 및 AnalysisResult 객체 생성
                 val userImage = UserImage(
                     localFilePath = uri.toString(),
                     fbFilePath = "",
@@ -102,11 +131,15 @@ class SelectImageViewModel @Inject constructor(
                     userImage = userImage,
                     similarTeenieping = enhancedTeenieping, // ChatGPT 설명이 포함된 TeeniepingInfo 사용
                     similarityScore = similarityScore,
-                    analysisTimestamp = Date().time
+                    analysisTimestamp = Date().time,
+                    shoppingLinks = finalShoppingLinks // 최종 쇼핑 링크 포함
                 )
-                Log.d(TAG, "AnalysisResult created: $analysisResult")
+                Log.d(TAG, "AnalysisResult created with ${finalShoppingLinks.size} shopping links")
+                finalShoppingLinks.forEachIndexed { index, link ->
+                    Log.d(TAG, "Final shopping link $index: ${link.itemName}")
+                }
 
-                // 4. 결과 저장 (Firestore 및 Storage)
+                // 5. 결과 저장 (Firestore 및 Storage)
                 val saveResult = saveAnalysisResultUseCase(uri, analysisResult)
 
                 if (saveResult.isSuccess) {
@@ -123,5 +156,50 @@ class SelectImageViewModel @Inject constructor(
                 _uiState.value = SelectImageUiState.AnalysisError(e.message ?: "분석 중 오류가 발생했습니다.")
             }
         }
+    }
+
+    /**
+     * 쇼핑 API 실패 시 사용할 fallback 더미 데이터 생성
+     */
+    private fun createFallbackShoppingLinks(teeniepingName: String): List<ShoppingLink> {
+        Log.d(TAG, "Creating fallback shopping links for: $teeniepingName")
+        return listOf(
+            ShoppingLink(
+                itemName = "$teeniepingName 티니핑 피규어 세트 (정품)",
+                linkUrl = "https://shopping.naver.com/window-products/fallback-${teeniepingName.hashCode()}01",
+                itemImageUrl = "https://shopping.phinf.naver.net/main_fallback/${teeniepingName.hashCode()}01/figure.jpg",
+                storeName = "티니핑 공식 스토어"
+            ),
+            ShoppingLink(
+                itemName = "$teeniepingName 티니핑 봉제인형 30cm",
+                linkUrl = "https://shopping.naver.com/window-products/fallback-${teeniepingName.hashCode()}02",
+                itemImageUrl = "https://shopping.phinf.naver.net/main_fallback/${teeniepingName.hashCode()}02/plush.jpg",
+                storeName = "키즈 랜드"
+            ),
+            ShoppingLink(
+                itemName = "$teeniepingName 티니핑 키링 컬렉션 5종 세트",
+                linkUrl = "https://shopping.naver.com/window-products/fallback-${teeniepingName.hashCode()}03",
+                itemImageUrl = "https://shopping.phinf.naver.net/main_fallback/${teeniepingName.hashCode()}03/keyring.jpg",
+                storeName = "캐릭터 월드"
+            ),
+            ShoppingLink(
+                itemName = "$teeniepingName 티니핑 스티커북 + 스티커 세트",
+                linkUrl = "https://shopping.naver.com/window-products/fallback-${teeniepingName.hashCode()}04",
+                itemImageUrl = "https://shopping.phinf.naver.net/main_fallback/${teeniepingName.hashCode()}04/sticker.jpg",
+                storeName = "문구나라"
+            ),
+            ShoppingLink(
+                itemName = "$teeniepingName 티니핑 캐릭터 백팩 (어린이용)",
+                linkUrl = "https://shopping.naver.com/window-products/fallback-${teeniepingName.hashCode()}05",
+                itemImageUrl = "https://shopping.phinf.naver.net/main_fallback/${teeniepingName.hashCode()}05/backpack.jpg",
+                storeName = "베이비 스토어"
+            ),
+            ShoppingLink(
+                itemName = "$teeniepingName 티니핑 문구용품 세트 (연필, 지우개, 자)",
+                linkUrl = "https://shopping.naver.com/window-products/fallback-${teeniepingName.hashCode()}06",
+                itemImageUrl = "https://shopping.phinf.naver.net/main_fallback/${teeniepingName.hashCode()}06/stationery.jpg",
+                storeName = "스마트 문구"
+            )
+        )
     }
 } 

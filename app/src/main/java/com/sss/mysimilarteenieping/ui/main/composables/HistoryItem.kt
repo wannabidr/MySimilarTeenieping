@@ -102,7 +102,7 @@ fun HistoryItemPreview() {
             createdAt = Date().time
         )
         val dummyTeenieping = TeeniepingInfo(
-            id = "test001",
+            id = 0,
             name = "방글핑",
             description = "항상 방긋 웃는 귀여운 티니핑",
             imagePath = "dummy_teenieping_image.png"

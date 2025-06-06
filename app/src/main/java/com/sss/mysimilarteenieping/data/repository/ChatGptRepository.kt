@@ -75,12 +75,19 @@ class ChatGptRepositoryImpl @Inject constructor(
     private fun createPrompt(teeniepingName: String, userImageFeatures: String?): String {
         return buildString {
             append("다음 티니핑에 대해 아이들에게 친근하고 재미있게 설명해주세요: $teeniepingName")
-            append("티니핑의 이름이 숫자라면 임의의 이름을 만들어 티니핑을 설명해주세요.")            
+            
+            // userImageFeatures가 있다면 추가 정보로 활용
+            userImageFeatures?.let { features ->
+                append("\n사용자 이미지 특징: $features")
+                append("\n이 특징을 반영하여 왜 이 티니핑과 닮았는지 설명해주세요.")
+            }
+            
             append("\n\n설명은 다음 조건을 만족해야 합니다:")
             append("\n- 아이들이 이해하기 쉬운 언어 사용")
             append("\n- 티니핑의 특별한 능력이나 성격 포함")
             append("\n- 긍정적이고 즐거운 톤")
             append("\n- 2-3문장으로 간단명료하게")
+            append("\n- 반말로 친근하게 작성")
         }
     }
 } 

@@ -199,7 +199,7 @@ class TeeniepingClassifier(
             if (classIndex < labels.size) {
                 val teeniepingName = labels[classIndex]
                 val teeniepingInfo = TeeniepingInfo(
-                    id = teeniepingName,
+                    id = classIndex, // ML 모델이 예측한 인덱스 값을 id로 설정
                     name = teeniepingName,
                     description = "${teeniepingName}과 ${String.format("%.1f", confidence * 100)}% 닮았어요!",
                     imagePath = "teenieping_images/${teeniepingName.lowercase()}.png" // assets 내 이미지 경로

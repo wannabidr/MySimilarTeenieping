@@ -11,14 +11,16 @@ data class AnalysisResult(
     val userImage: UserImage,           // 사용자가 입력한 이미지 정보 (URL 포함)
     val similarTeenieping: TeeniepingInfo, // 가장 닮은 티니핑 정보 (ChatGPT 설명이 description에 포함됨)
     val similarityScore: Float = 0.0f,
-    val analysisTimestamp: Long = 0L
+    val analysisTimestamp: Long = 0L,
+    val shoppingLinks: List<ShoppingLink> = emptyList() // 네이버 쇼핑 API로 수집된 관련 상품 링크
 ) {
     // Firestore 연동을 위한 기본 생성자 (필수)
     constructor() : this(
         id = "",
         userImage = UserImage(localFilePath = "", fbFilePath = "", createdAt = 0L),
-        similarTeenieping = TeeniepingInfo(id = "", name = "", description = "", imagePath = ""),
+        similarTeenieping = TeeniepingInfo(id = -1, name = "", description = "", imagePath = ""),
         similarityScore = 0.0f,
-        analysisTimestamp = 0L
+        analysisTimestamp = 0L,
+        shoppingLinks = emptyList()
     )
 } 

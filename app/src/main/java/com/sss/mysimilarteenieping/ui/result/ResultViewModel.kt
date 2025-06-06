@@ -14,6 +14,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.launch
 import javax.inject.Inject
+import android.util.Log
 
 sealed interface ResultUiState {
     object Loading : ResultUiState
@@ -27,6 +28,10 @@ class ResultViewModel @Inject constructor(
     private val getShoppingInfoUseCase: GetShoppingInfoUseCase,
     savedStateHandle: SavedStateHandle
 ) : ViewModel() {
+
+    companion object {
+        private const val TAG = "ResultViewModel"
+    }
 
     private val _uiState = MutableStateFlow<ResultUiState>(ResultUiState.Loading)
     val uiState: StateFlow<ResultUiState> = _uiState.asStateFlow()
@@ -54,27 +59,50 @@ class ResultViewModel @Inject constructor(
             try {
                 val analysisResult = historyRepository.getAnalysisResultById(resultId)
                 if (analysisResult != null) {
+                    Log.d(TAG, "Analysis result loaded: ${analysisResult.id}")
+                    Log.d(TAG, "Shopping links in result: ${analysisResult.shoppingLinks.size}")
+                    analysisResult.shoppingLinks.forEachIndexed { index, link ->
+                        Log.d(TAG, "Saved shopping link $index: ${link.itemName}")
+                    }
+                    
                     _uiState.value = ResultUiState.Success(analysisResult)
-                    fetchShoppingInfo(analysisResult.similarTeenieping.name)
+                    
+                    // AnalysisResult에 이미 쇼핑 링크가 있으면 사용하고, 없으면 새로 가져오기
+                    if (analysisResult.shoppingLinks.isNotEmpty()) {
+                        Log.d(TAG, "Using saved shopping links from AnalysisResult")
+                        _shoppingLinksState.value = analysisResult.shoppingLinks
+                        _shoppingLoadingState.value = false
+                    } else {
+                        Log.d(TAG, "No shopping links in AnalysisResult, fetching new ones")
+                        fetchShoppingInfo(analysisResult.similarTeenieping.name)
+                    }
                 } else {
+                    Log.e(TAG, "Analysis result not found for ID: $resultId")
                     _uiState.value = ResultUiState.Error("분석 결과를 찾을 수 없습니다.")
                 }
             } catch (e: Exception) {
+                Log.e(TAG, "Error loading result details", e)
                 _uiState.value = ResultUiState.Error(e.message ?: "결과를 불러오는 중 오류가 발생했습니다.")
             }
         }
     }
 
     private fun fetchShoppingInfo(teeniepingName: String) {
+        Log.d(TAG, "Fetching shopping info for: $teeniepingName")
         viewModelScope.launch {
             _shoppingLoadingState.value = true
             getShoppingInfoUseCase(teeniepingName)
                 .catch { e ->
+                    Log.e(TAG, "Error fetching shopping info", e)
                     _shoppingLinksState.value = emptyList()
                     _shoppingLoadingState.value = false
                     // TODO: 사용자에게 쇼핑 정보 로드 실패 알림 (예: Toast 메시지)
                 }
                 .collect { links ->
+                    Log.d(TAG, "Fetched ${links.size} shopping links in ResultViewModel")
+                    links.forEachIndexed { index, link ->
+                        Log.d(TAG, "Fetched shopping link $index: ${link.itemName}")
+                    }
                     _shoppingLinksState.value = links
                     _shoppingLoadingState.value = false
                 }
