@@ -7,7 +7,7 @@ import androidx.lifecycle.viewModelScope
 import com.sss.mysimilarteenieping.data.model.AnalysisResult
 import com.sss.mysimilarteenieping.data.model.TeeniepingInfo
 import com.sss.mysimilarteenieping.data.model.UserImage
-import com.sss.mysimilarteenieping.domain.usecase.GetChatGptDescriptionUseCase
+// import com.sss.mysimilarteenieping.domain.usecase.GetChatGptDescriptionUseCase
 import com.sss.mysimilarteenieping.domain.usecase.GetSimilarTeeniepingUseCase
 import com.sss.mysimilarteenieping.domain.usecase.SaveAnalysisResultUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -33,7 +33,7 @@ sealed interface SelectImageUiState {
 class SelectImageViewModel @Inject constructor(
     private val getSimilarTeeniepingUseCase: GetSimilarTeeniepingUseCase,
     private val saveAnalysisResultUseCase: SaveAnalysisResultUseCase,
-    private val getChatGptDescriptionUseCase: GetChatGptDescriptionUseCase
+    // private val getChatGptDescriptionUseCase: GetChatGptDescriptionUseCase
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow<SelectImageUiState>(SelectImageUiState.Idle)
@@ -69,23 +69,23 @@ class SelectImageViewModel @Inject constructor(
                 }
                 Log.d(TAG, "Teenieping classified: ${similarTeenieping.name}, Score: $similarityScore")
 
-                // 2. ChatGPT로 설명 가져오기 (선택적)
+                // 2. ChatGPT로 설명 가져오기 (선택적) - 현재 주석 처리
                 var chatGptDescription: String? = null
+                // TODO: ChatGPT 연동 구현 후 활성화
+                /*
                 try {
                     Log.d(TAG, "Fetching ChatGPT description for: ${similarTeenieping.name}")
-                    // 사용자 이미지 특징은 현재 설계에 없으므로 null 전달 또는 필요한 정보 추출 로직 추가
-                    val descriptionResult = getChatGptDescriptionUseCase(similarTeenieping.name /*, userImageFeatures = null */)
+                    val descriptionResult = getChatGptDescriptionUseCase(similarTeenieping.name)
                     if (descriptionResult.isSuccess) {
                         chatGptDescription = descriptionResult.getOrNull()
                         Log.d(TAG, "ChatGPT description fetched: $chatGptDescription")
                     } else {
                         Log.w(TAG, "Failed to fetch ChatGPT description: ${descriptionResult.exceptionOrNull()?.message}")
-                        // 설명 가져오기 실패 시 분석을 중단하지 않고, 설명 없이 진행
                     }
                 } catch (e: Exception) {
                     Log.e(TAG, "Error during ChatGPT description fetching", e)
-                    // 설명 가져오기 중 예외 발생 시에도 분석은 계속 진행
                 }
+                */
 
                 // 3. UserImage 및 AnalysisResult 객체 생성
                 val userImage = UserImage(

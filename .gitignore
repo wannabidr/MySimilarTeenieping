@@ -58,3 +58,4 @@ gen-external-apklibs
 /captures
 .externalNativeBuild
 .cxx
+/app/src/main/assets/
