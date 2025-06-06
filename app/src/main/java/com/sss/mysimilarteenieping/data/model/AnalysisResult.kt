@@ -12,7 +12,7 @@ data class AnalysisResult(
     val similarTeenieping: TeeniepingInfo, // 가장 닮은 티니핑 정보 (이미지 URL 포함 가능)
     val similarityScore: Float = 0.0f,
     val analysisTimestamp: Long = 0L,
-    val shoppingLinks: List<ShoppingLink> = emptyList()
+    val chatGptDescription: String? = null // ChatGPT가 생성한 티니핑 설명 (추가)
 ) {
     // Firestore 연동을 위한 기본 생성자 (필수)
     constructor() : this(
@@ -21,6 +21,6 @@ data class AnalysisResult(
         similarTeenieping = TeeniepingInfo(id = "", name = "", description = "", imagePath = ""),
         similarityScore = 0.0f,
         analysisTimestamp = 0L,
-        shoppingLinks = emptyList()
+        chatGptDescription = null // 기본 생성자에도 추가
     )
 } 

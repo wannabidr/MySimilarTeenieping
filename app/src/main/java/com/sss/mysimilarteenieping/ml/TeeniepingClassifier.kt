@@ -45,7 +45,7 @@ class TeeniepingClassifier(
      * @param bitmap 분석할 사용자 이미지
      * @return Pair<TeeniepingInfo?, Float> (가장 유사한 티니핑 정보, 유사도 점수). 찾지 못하면 (null, 0.0f).
      */
-    fun classify(bitmap: Bitmap): Pair<TeeniepingInfo?, Float> {
+    fun classify(bitmap: Bitmap): Pair<Int?, Float> {
         // TODO: Preprocess the bitmap (resize, normalize, etc.)
         // TODO: Run inference with the TFLite model
         // TODO: Postprocess the output to get label and score
@@ -57,7 +57,7 @@ class TeeniepingClassifier(
         // val dummyInfo = TeeniepingInfo(id=dummyTeeniepingName, name = dummyTeeniepingName, description = "Dummy description from classifier", imagePath = "")
         // return Pair(dummyInfo, dummyScore)
 
-        return Pair(null, 0.0f) // 실제 구현 전까지 플레이스홀더 반환
+        return Pair(0, 0.0f) // 실제 구현 전까지 플레이스홀더 반환
     }
 
     fun close() {

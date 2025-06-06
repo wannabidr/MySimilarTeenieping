@@ -7,6 +7,7 @@ import androidx.lifecycle.viewModelScope
 import com.sss.mysimilarteenieping.data.model.AnalysisResult
 import com.sss.mysimilarteenieping.data.model.TeeniepingInfo
 import com.sss.mysimilarteenieping.data.model.UserImage
+import com.sss.mysimilarteenieping.domain.usecase.GetChatGptDescriptionUseCase
 import com.sss.mysimilarteenieping.domain.usecase.GetSimilarTeeniepingUseCase
 import com.sss.mysimilarteenieping.domain.usecase.SaveAnalysisResultUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -16,6 +17,9 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import java.util.Date
 import javax.inject.Inject
+import android.util.Log
+
+private const val TAG = "SelectImageViewModel"
 
 sealed interface SelectImageUiState {
     object Idle : SelectImageUiState // 초기 상태 또는 이미지 선택 대기
@@ -28,7 +32,8 @@ sealed interface SelectImageUiState {
 @HiltViewModel
 class SelectImageViewModel @Inject constructor(
     private val getSimilarTeeniepingUseCase: GetSimilarTeeniepingUseCase,
-    private val saveAnalysisResultUseCase: SaveAnalysisResultUseCase
+    private val saveAnalysisResultUseCase: SaveAnalysisResultUseCase,
+    private val getChatGptDescriptionUseCase: GetChatGptDescriptionUseCase
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow<SelectImageUiState>(SelectImageUiState.Idle)
@@ -62,35 +67,55 @@ class SelectImageViewModel @Inject constructor(
                     _uiState.value = SelectImageUiState.AnalysisError("닮은 티니핑을 찾지 못했습니다.")
                     return@launch
                 }
+                Log.d(TAG, "Teenieping classified: ${similarTeenieping.name}, Score: $similarityScore")
 
-                // 2. UserImage 및 AnalysisResult 객체 생성
-                // UserImage의 fbFilePath는 HistoryRepositoryImpl에서 이미지 업로드 후 설정됨
+                // 2. ChatGPT로 설명 가져오기 (선택적)
+                var chatGptDescription: String? = null
+                try {
+                    Log.d(TAG, "Fetching ChatGPT description for: ${similarTeenieping.name}")
+                    // 사용자 이미지 특징은 현재 설계에 없으므로 null 전달 또는 필요한 정보 추출 로직 추가
+                    val descriptionResult = getChatGptDescriptionUseCase(similarTeenieping.name /*, userImageFeatures = null */)
+                    if (descriptionResult.isSuccess) {
+                        chatGptDescription = descriptionResult.getOrNull()
+                        Log.d(TAG, "ChatGPT description fetched: $chatGptDescription")
+                    } else {
+                        Log.w(TAG, "Failed to fetch ChatGPT description: ${descriptionResult.exceptionOrNull()?.message}")
+                        // 설명 가져오기 실패 시 분석을 중단하지 않고, 설명 없이 진행
+                    }
+                } catch (e: Exception) {
+                    Log.e(TAG, "Error during ChatGPT description fetching", e)
+                    // 설명 가져오기 중 예외 발생 시에도 분석은 계속 진행
+                }
+
+                // 3. UserImage 및 AnalysisResult 객체 생성
                 val userImage = UserImage(
-                    localFilePath = uri.toString(), // 로컬 URI 저장
-                    fbFilePath = "", // Repository에서 채워질 예정
+                    localFilePath = uri.toString(),
+                    fbFilePath = "",
                     createdAt = Date().time
                 )
-                // AnalysisResult는 id 없이 생성 (Firestore에서 자동 생성되거나 Repository에서 설정)
                 val analysisResult = AnalysisResult(
                     userImage = userImage,
                     similarTeenieping = similarTeenieping,
                     similarityScore = similarityScore,
-                    analysisTimestamp = Date().time
-                    // shoppingLinks는 필요시 Repository나 FirebaseService에서 추가 가능, 또는 기본값 emptyList() 사용
+                    analysisTimestamp = Date().time,
+                    chatGptDescription = chatGptDescription // 가져온 설명 포함
                 )
+                Log.d(TAG, "AnalysisResult created: $analysisResult")
 
-                // 3. 결과 저장 (Firestore 및 Storage)
-                // SaveAnalysisResultUseCase는 이제 Uri와 AnalysisResult를 받음
+                // 4. 결과 저장 (Firestore 및 Storage)
                 val saveResult = saveAnalysisResultUseCase(uri, analysisResult)
 
                 if (saveResult.isSuccess) {
-                    val savedDocumentId = saveResult.getOrThrow() // 성공 시 Firestore 문서 ID를 가져옴
+                    val savedDocumentId = saveResult.getOrThrow()
+                    Log.d(TAG, "AnalysisResult saved with ID: $savedDocumentId")
                     _uiState.value = SelectImageUiState.AnalysisSuccess(savedDocumentId)
                 } else {
+                    Log.e(TAG, "Failed to save analysis result: ${saveResult.exceptionOrNull()?.message}")
                     _uiState.value = SelectImageUiState.AnalysisError(saveResult.exceptionOrNull()?.message ?: "결과 저장에 실패했습니다.")
                 }
 
             } catch (e: Exception) {
+                Log.e(TAG, "Error during analysis process", e)
                 _uiState.value = SelectImageUiState.AnalysisError(e.message ?: "분석 중 오류가 발생했습니다.")
             }
         }

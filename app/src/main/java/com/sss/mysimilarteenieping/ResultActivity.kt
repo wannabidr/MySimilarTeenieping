@@ -31,14 +31,19 @@ class ResultActivity : ComponentActivity() {
             MySimilarTeeniepingTheme {
                 Surface(modifier = Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.background) {
                     val uiState by viewModel.uiState.collectAsState()
+                    val shoppingLinks by viewModel.shoppingLinksState.collectAsState()
+                    val isShoppingLoading by viewModel.shoppingLoadingState.collectAsState()
+
                     ResultScreen(
                         uiState = uiState,
+                        shoppingLinks = shoppingLinks,
+                        isShoppingLoading = isShoppingLoading,
                         onShoppingLinkClicked = { url ->
                             try {
                                 val intent = Intent(Intent.ACTION_VIEW, Uri.parse(url))
                                 startActivity(intent)
                             } catch (e: Exception) {
-                                // TODO: Handle invalid URL or no browser app
+                                // TODO: Handle invalid URL or no browser app (e.g., show a Toast)
                                 e.printStackTrace()
                             }
                         },

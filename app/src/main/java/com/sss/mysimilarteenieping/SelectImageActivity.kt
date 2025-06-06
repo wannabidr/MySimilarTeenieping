@@ -2,6 +2,7 @@ package com.sss.mysimilarteenieping
 
 import android.content.Intent
 import android.graphics.BitmapFactory
+import android.net.Uri
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -15,17 +16,23 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
+import androidx.core.content.FileProvider
 import com.sss.mysimilarteenieping.ui.select.SelectImageUiState
 import com.sss.mysimilarteenieping.ui.select.SelectImageViewModel
-import com.sss.mysimilarteenieping.ui.select.composables.SelectImageScreen // 경로 확인 필요
+import com.sss.mysimilarteenieping.ui.select.composables.SelectImageScreen
 import com.sss.mysimilarteenieping.ui.theme.MySimilarTeeniepingTheme
 import dagger.hilt.android.AndroidEntryPoint
+import java.io.File
 import java.io.InputStream
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 
 @AndroidEntryPoint
 class SelectImageActivity : ComponentActivity() {
 
     private val viewModel: SelectImageViewModel by viewModels()
+    private var tempImageUri: Uri? = null
 
     // Photo Picker 결과 처리
     private val pickMediaLauncher = registerForActivityResult(ActivityResultContracts.PickVisualMedia()) { uri ->
@@ -46,7 +53,44 @@ class SelectImageActivity : ComponentActivity() {
         }
     }
 
-    // TODO: 카메라 결과 처리 로직 추가 (ActivityResultContracts.TakePicture())
+    // 카메라 결과 처리
+    private val takePictureLauncher = registerForActivityResult(ActivityResultContracts.TakePicture()) { success ->
+        if (success) {
+            tempImageUri?.let { uri ->
+                try {
+                    val inputStream: InputStream? = contentResolver.openInputStream(uri)
+                    val bitmap = BitmapFactory.decodeStream(inputStream)
+                    inputStream?.close()
+                    if (bitmap != null) {
+                        viewModel.onImageSelected(uri, bitmap)
+                    }
+                } catch (e: Exception) {
+                    // TODO: Handle exception
+                    e.printStackTrace()
+                }
+            }
+        } else {
+            // Picture wasn't taken or was cancelled
+            tempImageUri = null
+        }
+    }
+
+    // 임시 이미지 파일을 생성하고 URI를 반환하는 함수
+    private fun createImageFileUri(): Uri {
+        val timeStamp: String = SimpleDateFormat("yyyyMMdd_HHmmss", Locale.getDefault()).format(Date())
+        val imageFileName = "JPEG_${timeStamp}_"
+        val storageDir: File? = cacheDir
+        val imageFile = File.createTempFile(
+            imageFileName,
+            ".jpg",
+            storageDir
+        )
+        return FileProvider.getUriForFile(
+            this,
+            "${BuildConfig.APPLICATION_ID}.provider",
+            imageFile
+        )
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -61,7 +105,13 @@ class SelectImageActivity : ComponentActivity() {
                             pickMediaLauncher.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly))
                         },
                         onCameraClick = {
-                            // TODO: Implement camera launch
+                            val uri = createImageFileUri()
+                            tempImageUri = uri
+                            tempImageUri?.let {
+                                takePictureLauncher.launch(it)
+                            } ?: run {
+                                android.widget.Toast.makeText(this@SelectImageActivity, "카메라를 실행할 수 없습니다.", android.widget.Toast.LENGTH_SHORT).show()
+                            }
                         },
                         onAnalyzeClick = {
                             viewModel.startAnalysis()
@@ -76,7 +126,7 @@ class SelectImageActivity : ComponentActivity() {
                                 putExtra("resultId", resultId)
                             }
                             startActivity(intent)
-                            finish() // 현재 액티비티 종료
+                            finish()
                         }
                         // TODO: Handle AnalysisError state (e.g., show a Toast or Snackbar)
                     }

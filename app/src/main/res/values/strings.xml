@@ -36,6 +36,7 @@
     <string name="result_shopping_links_title">티니핑 굿즈 쇼핑하기</string>
     <string name="result_load_error_message">결과를 불러오는 중 오류 발생: %1$s</string>
     <string name="button_retry">재시도</string>
+    <string name="result_no_shopping_links_found">쇼핑정보가 없습니다</string>
 
     <!-- General/Shared -->
     <string name="error_unknown">알 수 없는 오류가 발생했습니다.</string>

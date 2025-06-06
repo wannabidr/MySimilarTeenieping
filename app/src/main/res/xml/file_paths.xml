@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<paths xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- 앱의 내부 캐시 디렉토리에 있는 파일들을 공유 -->
+    <cache-path name="my_images" path="." />
+    <!--
+        필요에 따라 다른 경로도 추가 가능:
+        <files-path name="my_files" path="images/" /> // context.getFilesDir() 내부의 images/ 서브디렉토리
+        <external-path name="my_external_files" path="." /> // Environment.getExternalStorageDirectory() 루트
+        <external-cache-path name="my_external_cache" path="." /> // context.getExternalCacheDir() 루트
+        <external-media-path name="my_external_media" path="." /> // context.getExternalMediaDirs() 첫 번째 반환 값
+    -->
+</paths> 

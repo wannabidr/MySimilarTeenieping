@@ -28,9 +28,7 @@ object TestData {
         similarTeenieping = dummyTeenieping1,
         similarityScore = 0.85f,
         analysisTimestamp = System.currentTimeMillis() - 2 * 24 * 60 * 60 * 1000,
-        shoppingLinks = listOf(
-            ShoppingLink(itemName = "방글핑 인형", linkUrl = "https://example.com/banggleping_doll", storeName = "티니핑 스토어")
-        )
+        chatGptDescription = "방글핑은 매우 긍정적이고 웃음이 많은 티니핑이랍니다. 주변에 행복을 나눠주는 것을 좋아해요! (더미 데이터)"
     )
 
     val dummyUserImage2 = UserImage(
@@ -52,7 +50,7 @@ object TestData {
         similarTeenieping = dummyTeenieping2,
         similarityScore = 0.92f,
         analysisTimestamp = System.currentTimeMillis() - 1 * 24 * 60 * 60 * 1000,
-        shoppingLinks = emptyList()
+        chatGptDescription = null // 설명이 없을 수도 있음을 테스트
     )
 
     val previewHistoryList: List<AnalysisResult> = listOf(
@@ -74,9 +72,9 @@ object TestData {
         imagePath = "https://via.placeholder.com/180/FFFFAA/000000?Text=HaepingPreview"
     )
 
-    val resultScreenSuccessShoppingLinks = listOf(
-        ShoppingLink(itemName = "해핑 인형 (대형) - Preview", linkUrl = "https://example.com/doll_large_preview", storeName = "티니핑 스토어 Preview"),
-        ShoppingLink(itemName = "해핑 키링 - Preview", linkUrl = "https://example.com/keyring_preview", storeName = "Another Store Preview")
+    val previewShoppingLinks = listOf(
+        ShoppingLink(itemName = "해핑 인형 (대형) - Preview", itemImageUrl = "https://via.placeholder.com/100/FFFFAA/000000?Text=DollPreview", linkUrl = "https://example.com/doll_large_preview", storeName = "티니핑 스토어 Preview"),
+        ShoppingLink(itemName = "해핑 키링 - Preview", itemImageUrl = "https://via.placeholder.com/100/FFFFAA/000000?Text=KeyringPreview", linkUrl = "https://example.com/keyring_preview", storeName = "Another Store Preview")
     )
 
     val resultScreenSuccessResult = AnalysisResult(
@@ -85,6 +83,6 @@ object TestData {
         similarTeenieping = resultScreenSuccessTeenieping,
         similarityScore = 0.92f,
         analysisTimestamp = Date().time,
-        shoppingLinks = resultScreenSuccessShoppingLinks
+        chatGptDescription = "해핑에 대한 ChatGPT의 특별한 설명입니다: 해핑은 반짝이는 햇살처럼 밝고 따뜻한 마음을 가졌어요. 언제나 친구들에게 웃음과 행복을 선물한답니다! (Preview 데이터)"
     )
-} 
+}

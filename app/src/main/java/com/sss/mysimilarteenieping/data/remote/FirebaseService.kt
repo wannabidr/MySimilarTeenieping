@@ -1,11 +1,14 @@
 package com.sss.mysimilarteenieping.data.remote
 
 import android.net.Uri
+import android.util.Log
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.storage.FirebaseStorage
 import com.sss.mysimilarteenieping.data.model.AnalysisResult
 import kotlinx.coroutines.tasks.await
 import java.util.UUID
+
+private const val TAG = "FirebaseService"
 
 /**
  * Firebase Firestore 및 Firebase Storage 관련 로직을 통합하거나 분리하여 제공하는 서비스 클래스
@@ -25,6 +28,7 @@ class FirebaseService(
      * 파일을 Firebase Storage에 업로드하고 다운로드 URL을 반환합니다.
      */
     suspend fun uploadImage(localFileUri: Uri, fileName: String = UUID.randomUUID().toString()): Result<String> {
+        Log.d(TAG, "uploadImage: localFileUri = $localFileUri, fileName = $fileName")
         return try {
             val storageRef = storage.reference.child("$userImagesFolder/$fileName")
             storageRef.putFile(localFileUri).await()
@@ -39,6 +43,7 @@ class FirebaseService(
      * 분석 결과를 Firestore에 저장합니다.
      */
     suspend fun saveAnalysisResult(analysisResult: AnalysisResult): Result<String> {
+        Log.d(TAG, "saveAnalysisResult: triggered, analysisResult = $analysisResult")
         return try {
             val documentReference = historyCollection.add(analysisResult).await()
             Result.success(documentReference.id)
@@ -51,6 +56,7 @@ class FirebaseService(
      * 모든 분석 결과를 Firestore에서 가져옵니다.
      */
     suspend fun getAllAnalysisResults(): Result<List<AnalysisResult>> {
+        Log.d(TAG, "getAllAnalysisResults: triggered")
         return try {
             val querySnapshot = historyCollection.orderBy("analysisTimestamp", com.google.firebase.firestore.Query.Direction.DESCENDING).get().await()
             val results = querySnapshot.toObjects(AnalysisResult::class.java)
@@ -64,6 +70,7 @@ class FirebaseService(
      * ID로 특정 분석 결과를 Firestore에서 가져옵니다.
      */
     suspend fun getAnalysisResultById(id: String): Result<AnalysisResult?> {
+        Log.d(TAG, "getAnalysisResultById: triggered, id = $id")
         return try {
             val documentSnapshot = historyCollection.document(id).get().await()
             val result = documentSnapshot.toObject(AnalysisResult::class.java)
@@ -77,6 +84,7 @@ class FirebaseService(
      * ID로 분석 결과를 Firestore에서 삭제합니다.
      */
     suspend fun deleteAnalysisResult(id: String): Result<Unit> {
+        Log.d(TAG, "deleteAnalysisResult: id = $id")
         return try {
             historyCollection.document(id).delete().await()
             Result.success(Unit)

@@ -38,11 +38,18 @@ import com.sss.mysimilarteenieping.ui.theme.MySimilarTeeniepingTheme
 import com.sss.mysimilarteenieping.util.TestData // Added import for TestData
 import java.text.SimpleDateFormat
 import java.util.*
+import androidx.compose.foundation.background
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.collectAsState
+import androidx.compose.ui.unit.sp
+import com.sss.mysimilarteenieping.ui.result.ResultViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ResultScreen(
     uiState: ResultUiState,
+    shoppingLinks: List<ShoppingLink>,
+    isShoppingLoading: Boolean,
     onShoppingLinkClicked: (String) -> Unit,
     onRetryClick: () -> Unit,
     onBackClick: () -> Unit,
@@ -51,7 +58,7 @@ fun ResultScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text(stringResource(id = R.string.result_screen_title)) }, // R.string.result_screen_title 정의 필요
+                title = { Text(stringResource(id = R.string.result_screen_title)) },
                 navigationIcon = {
                     IconButton(onClick = onBackClick) {
                         Icon(Icons.Filled.ArrowBack, contentDescription = stringResource(id = R.string.cd_navigate_back))
@@ -65,7 +72,7 @@ fun ResultScreen(
                             val shareText = "나와 닮은 티니핑은 ${uiState.result.similarTeenieping.name}이래요! (정확도: ${String.format("%.0f", uiState.result.similarityScore * 100)}%)"
                             onShareClick(shareText)
                         }) {
-                            Icon(Icons.Filled.Share, contentDescription = stringResource(id = R.string.cd_share_result)) // R.string.cd_share_result 정의 필요
+                            Icon(Icons.Filled.Share, contentDescription = stringResource(id = R.string.cd_share_result))
                         }
                     }
                 }
@@ -85,7 +92,12 @@ fun ResultScreen(
                     CircularProgressIndicator()
                 }
                 is ResultUiState.Success -> {
-                    ResultContent(result = uiState.result, onShoppingLinkClicked = onShoppingLinkClicked)
+                    ResultContent(
+                        result = uiState.result,
+                        shoppingLinks = shoppingLinks,
+                        isShoppingLoading = isShoppingLoading,
+                        onShoppingLinkClicked = onShoppingLinkClicked
+                    )
                 }
                 is ResultUiState.Error -> {
                     ErrorStateView(message = uiState.message, onRetryClick = onRetryClick)
@@ -98,6 +110,8 @@ fun ResultScreen(
 @Composable
 fun ResultContent(
     result: AnalysisResult,
+    shoppingLinks: List<ShoppingLink>,
+    isShoppingLoading: Boolean,
     onShoppingLinkClicked: (String) -> Unit
 ) {
     val scrollState = rememberScrollState()
@@ -143,7 +157,7 @@ fun ResultContent(
 
         AsyncImage(
             model = ImageRequest.Builder(LocalContext.current)
-                .data(result.similarTeenieping.imagePath) // Firebase Storage URL or local/asset path
+                .data(result.similarTeenieping.imagePath)
                 .crossfade(true)
                 .build(),
             placeholder = rememberVectorPainter(image = Icons.Filled.Face),
@@ -174,18 +188,77 @@ fun ResultContent(
         Divider()
 
         // Shopping Links
-        if (result.shoppingLinks.isNotEmpty()) {
-            Spacer(modifier = Modifier.height(16.dp))
-            Text(
-                text = stringResource(id = R.string.result_shopping_links_title), // R.string.result_shopping_links_title 정의 필요
-                style = MaterialTheme.typography.titleMedium,
-                modifier = Modifier.padding(bottom = 8.dp)
-            )
-            result.shoppingLinks.forEach {
-                shoppingLink ->
-                ShoppingLinkItem(link = shoppingLink, onClick = { onShoppingLinkClicked(shoppingLink.linkUrl) })
-                Spacer(modifier = Modifier.height(8.dp))
+        if (isShoppingLoading) {
+            ShoppingLinksLoadingSkeletons()
+        } else {
+            if (shoppingLinks.isNotEmpty()) {
+                Spacer(modifier = Modifier.height(16.dp))
+                Text(
+                    text = stringResource(id = R.string.result_shopping_links_title), // R.string.result_shopping_links_title 정의 필요
+                    style = MaterialTheme.typography.titleMedium,
+                    modifier = Modifier.padding(bottom = 8.dp)
+                )
+                shoppingLinks.forEach {
+                    shoppingLink ->
+                    ShoppingLinkItem(link = shoppingLink, onClick = { onShoppingLinkClicked(shoppingLink.linkUrl) })
+                    Spacer(modifier = Modifier.height(8.dp))
+                }
+            } else {
+                Text(
+                    text = stringResource(id = R.string.result_no_shopping_links_found), // R.string.result_no_shopping_links_found 정의 필요
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
             }
+        }
+    }
+}
+
+@Composable
+fun ShoppingLinksLoadingSkeletons(count: Int = 2) {
+    Column {
+        repeat(count) {
+            ShoppingLinkItemSkeleton()
+            Spacer(modifier = Modifier.height(8.dp))
+        }
+    }
+}
+
+@Composable
+fun ShoppingLinkItemSkeleton() {
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(56.dp) // ShoppingLinkItem 높이와 유사하게
+            .background(
+                color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f),
+                shape = RoundedCornerShape(8.dp)
+            )
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(horizontal = 16.dp, vertical = 8.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Box(
+                modifier = Modifier
+                    .size(24.dp) // Icon size
+                    .background(
+                        color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.1f),
+                        shape = RoundedCornerShape(4.dp)
+                    )
+            )
+            Spacer(Modifier.width(ButtonDefaults.IconSpacing))
+            Box(
+                modifier = Modifier
+                    .weight(1f)
+                    .height(20.dp) // Text height
+                    .background(
+                        color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.1f),
+                        shape = RoundedCornerShape(4.dp)
+                    )
+            )
         }
     }
 }
@@ -228,7 +301,7 @@ fun ErrorStateView(
         Icon(Icons.Filled.ErrorOutline, contentDescription = null, modifier = Modifier.size(64.dp), tint = MaterialTheme.colorScheme.error)
         Spacer(modifier = Modifier.height(16.dp))
         Text(
-            text = stringResource(id = R.string.result_load_error_message, message), // R.string.result_load_error_message 정의 필요
+            text = stringResource(id = R.string.result_load_error_message, message),
             style = MaterialTheme.typography.bodyLarge,
             textAlign = TextAlign.Center,
             color = MaterialTheme.colorScheme.error
@@ -241,15 +314,16 @@ fun ErrorStateView(
 }
 
 // Previews
-@Preview(showBackground = true)
+@Preview(showBackground = true, name = "Result Screen Success")
 @Composable
 fun ResultScreenPreview_Success() {
     MySimilarTeeniepingTheme {
         ResultScreen(
             uiState = ResultUiState.Success(
-                result = TestData.resultScreenSuccessResult,
-                shoppingLinks = TestData.resultScreenSuccessResult.shoppingLinks // Pass the shopping links from TestData
+                result = TestData.resultScreenSuccessResult
             ),
+            shoppingLinks = TestData.previewShoppingLinks,
+            isShoppingLoading = false,
             onShoppingLinkClicked = {},
             onRetryClick = {},
             onBackClick = {},
@@ -258,12 +332,16 @@ fun ResultScreenPreview_Success() {
     }
 }
 
-@Preview(showBackground = true)
+@Preview(showBackground = true, name = "Result Screen Shopping Loading")
 @Composable
-fun ResultScreenPreview_Loading() {
+fun ResultScreenPreview_ShoppingLoading() {
     MySimilarTeeniepingTheme {
         ResultScreen(
-            uiState = ResultUiState.Loading, // Assuming ResultUiState.Loading is an object or class without params
+            uiState = ResultUiState.Success(
+                result = TestData.resultScreenSuccessResult
+            ),
+            shoppingLinks = emptyList(),
+            isShoppingLoading = true, // 쇼핑 로딩 상태
             onShoppingLinkClicked = {},
             onRetryClick = {},
             onBackClick = {},
@@ -272,12 +350,48 @@ fun ResultScreenPreview_Loading() {
     }
 }
 
-@Preview(showBackground = true)
+@Preview(showBackground = true, name = "Result Screen No Shopping Links")
+@Composable
+fun ResultScreenPreview_NoShoppingLinks() {
+    MySimilarTeeniepingTheme {
+        ResultScreen(
+            uiState = ResultUiState.Success(
+                result = TestData.resultScreenSuccessResult
+            ),
+            shoppingLinks = emptyList(), // 쇼핑 링크 없음
+            isShoppingLoading = false,
+            onShoppingLinkClicked = {},
+            onRetryClick = {},
+            onBackClick = {},
+            onShareClick = {}
+        )
+    }
+}
+
+@Preview(showBackground = true, name = "Result Screen Error")
 @Composable
 fun ResultScreenPreview_Error() {
     MySimilarTeeniepingTheme {
         ResultScreen(
-            uiState = ResultUiState.Error("Could not fetch result details for preview."), // Assuming ResultUiState.Error takes a String
+            uiState = ResultUiState.Error("미리보기 에러 메시지"),
+            shoppingLinks = emptyList(),
+            isShoppingLoading = false,
+            onShoppingLinkClicked = {},
+            onRetryClick = {},
+            onBackClick = {},
+            onShareClick = {}
+        )
+    }
+}
+
+@Preview(showBackground = true, name = "Result Screen Loading")
+@Composable
+fun ResultScreenPreview_Loading() {
+    MySimilarTeeniepingTheme {
+        ResultScreen(
+            uiState = ResultUiState.Loading,
+            shoppingLinks = emptyList(),
+            isShoppingLoading = false, // 기본 UI 로딩 중일 땐 쇼핑 로딩은 false일 수 있음
             onShoppingLinkClicked = {},
             onRetryClick = {},
             onBackClick = {},
