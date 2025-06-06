@@ -172,7 +172,7 @@ fun ResultContent(
         Spacer(modifier = Modifier.height(8.dp))
 
         Text(
-            text = result.similarTeenieping.description,
+            text = result.chatGptDescription ?: result.similarTeenieping.description,
             style = MaterialTheme.typography.bodyMedium,
             textAlign = TextAlign.Center,
             modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
