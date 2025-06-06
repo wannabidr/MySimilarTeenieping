@@ -46,7 +46,14 @@ class FirebaseService(
         Log.d(TAG, "saveAnalysisResult: triggered, analysisResult = $analysisResult")
         return try {
             val documentReference = historyCollection.add(analysisResult).await()
-            Result.success(documentReference.id)
+            val documentId = documentReference.id
+            
+            // ID를 포함한 완전한 객체로 업데이트
+            val updatedAnalysisResult = analysisResult.copy(id = documentId)
+            historyCollection.document(documentId).set(updatedAnalysisResult).await()
+            
+            Log.d(TAG, "saveAnalysisResult: saved with ID = $documentId")
+            Result.success(documentId)
         } catch (e: Exception) {
             Result.failure(e)
         }
@@ -59,7 +66,9 @@ class FirebaseService(
         Log.d(TAG, "getAllAnalysisResults: triggered")
         return try {
             val querySnapshot = historyCollection.orderBy("analysisTimestamp", com.google.firebase.firestore.Query.Direction.DESCENDING).get().await()
-            val results = querySnapshot.toObjects(AnalysisResult::class.java)
+            val results = querySnapshot.documents.mapNotNull { document ->
+                document.toObject(AnalysisResult::class.java)?.copy(id = document.id)
+            }
             Result.success(results)
         } catch (e: Exception) {
             Result.failure(e)
@@ -79,7 +88,7 @@ class FirebaseService(
             Log.d(TAG, "Document data: ${documentSnapshot.data}")
             
             val result = try {
-                documentSnapshot.toObject(AnalysisResult::class.java)
+                documentSnapshot.toObject(AnalysisResult::class.java)?.copy(id = documentSnapshot.id)
             } catch (parseException: Exception) {
                 Log.e(TAG, "Failed to parse document to AnalysisResult: ${parseException.message}", parseException)
                 Log.e(TAG, "Raw document data: ${documentSnapshot.data}")

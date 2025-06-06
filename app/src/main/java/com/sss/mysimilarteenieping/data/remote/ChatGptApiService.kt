@@ -1,24 +1,20 @@
 package com.sss.mysimilarteenieping.data.remote
 
+import com.sss.mysimilarteenieping.data.model.ChatGptRequest
+import com.sss.mysimilarteenieping.data.model.ChatGptResponse
+import retrofit2.Response
+import retrofit2.http.Body
+import retrofit2.http.POST
+
 /**
- * (선택 사항) ChatGPT API 연동을 위한 서비스 인터페이스
+ * ChatGPT API 연동을 위한 Retrofit 서비스 인터페이스
  */
 interface ChatGptApiService {
     /**
-     * 티니핑 이름과 사용자 사진 특징을 기반으로 설명을 생성 요청합니다.
+     * OpenAI ChatGPT API에 채팅 완성 요청을 보냅니다.
      */
-    suspend fun getTeeniepingDescription(
-        teeniepingName: String,
-        userImageFeatures: String // 예: "밝게 웃는 얼굴, 갈색 눈동자"
-    ): Result<String>
-}
-
-/**
- * ChatGptApiService의 실제 구현체 (Retrofit 등 사용)
- */
-class ChatGptApiServiceImpl(/* retrofit: Retrofit */) : ChatGptApiService {
-    override suspend fun getTeeniepingDescription(teeniepingName: String, userImageFeatures: String): Result<String> {
-        // TODO: Implement ChatGPT API call
-        return Result.success("Generated description for $teeniepingName based on $userImageFeatures") // Placeholder
-    }
+    @POST("chat/completions")
+    suspend fun createChatCompletion(
+        @Body request: ChatGptRequest
+    ): Response<ChatGptResponse>
 } 

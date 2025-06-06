@@ -25,10 +25,12 @@ object TestData {
     val dummyResult1 = AnalysisResult(
         id = "result001",
         userImage = dummyUserImage1,
-        similarTeenieping = dummyTeenieping1,
+        similarTeenieping = dummyTeenieping1.copy(
+            description = dummyTeenieping1.description, // 원래 설명 유지
+            details = "방글핑은 매우 긍정적이고 웃음이 많은 티니핑이랍니다. 주변에 행복을 나눠주는 것을 좋아해요! (ChatGPT 설명)"
+        ),
         similarityScore = 0.85f,
-        analysisTimestamp = System.currentTimeMillis() - 2 * 24 * 60 * 60 * 1000,
-        chatGptDescription = "방글핑은 매우 긍정적이고 웃음이 많은 티니핑이랍니다. 주변에 행복을 나눠주는 것을 좋아해요! (더미 데이터)"
+        analysisTimestamp = System.currentTimeMillis() - 2 * 24 * 60 * 60 * 1000
     )
 
     val dummyUserImage2 = UserImage(
@@ -49,8 +51,7 @@ object TestData {
         userImage = dummyUserImage2,
         similarTeenieping = dummyTeenieping2,
         similarityScore = 0.92f,
-        analysisTimestamp = System.currentTimeMillis() - 1 * 24 * 60 * 60 * 1000,
-        chatGptDescription = null // 설명이 없을 수도 있음을 테스트
+        analysisTimestamp = System.currentTimeMillis() - 1 * 24 * 60 * 60 * 1000
     )
 
     val previewHistoryList: List<AnalysisResult> = listOf(
@@ -80,9 +81,11 @@ object TestData {
     val resultScreenSuccessResult = AnalysisResult(
         id = "res_preview_001",
         userImage = resultScreenSuccessUserImage,
-        similarTeenieping = resultScreenSuccessTeenieping,
+        similarTeenieping = resultScreenSuccessTeenieping.copy(
+            description = resultScreenSuccessTeenieping.description, // 원래 설명 유지
+            details = "해핑은 반짝이는 햇살처럼 밝고 따뜻한 마음을 가졌어요. 언제나 친구들에게 웃음과 행복을 선물한답니다! (ChatGPT 설명)"
+        ),
         similarityScore = 0.92f,
-        analysisTimestamp = Date().time,
-        chatGptDescription = "해핑에 대한 ChatGPT의 특별한 설명입니다: 해핑은 반짝이는 햇살처럼 밝고 따뜻한 마음을 가졌어요. 언제나 친구들에게 웃음과 행복을 선물한답니다! (Preview 데이터)"
+        analysisTimestamp = Date().time
     )
 }

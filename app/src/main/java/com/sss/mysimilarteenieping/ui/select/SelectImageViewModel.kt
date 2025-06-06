@@ -7,7 +7,7 @@ import androidx.lifecycle.viewModelScope
 import com.sss.mysimilarteenieping.data.model.AnalysisResult
 import com.sss.mysimilarteenieping.data.model.TeeniepingInfo
 import com.sss.mysimilarteenieping.data.model.UserImage
-// import com.sss.mysimilarteenieping.domain.usecase.GetChatGptDescriptionUseCase
+import com.sss.mysimilarteenieping.domain.usecase.GetChatGptDescriptionUseCase
 import com.sss.mysimilarteenieping.domain.usecase.GetSimilarTeeniepingUseCase
 import com.sss.mysimilarteenieping.domain.usecase.SaveAnalysisResultUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -33,7 +33,7 @@ sealed interface SelectImageUiState {
 class SelectImageViewModel @Inject constructor(
     private val getSimilarTeeniepingUseCase: GetSimilarTeeniepingUseCase,
     private val saveAnalysisResultUseCase: SaveAnalysisResultUseCase,
-    // private val getChatGptDescriptionUseCase: GetChatGptDescriptionUseCase
+    private val getChatGptDescriptionUseCase: GetChatGptDescriptionUseCase
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow<SelectImageUiState>(SelectImageUiState.Idle)
@@ -69,23 +69,28 @@ class SelectImageViewModel @Inject constructor(
                 }
                 Log.d(TAG, "Teenieping classified: ${similarTeenieping.name}, Score: $similarityScore")
 
-                // 2. ChatGPT로 설명 가져오기 (선택적) - 현재 주석 처리
-                var chatGptDescription: String? = null
-                // TODO: ChatGPT 연동 구현 후 활성화
-                /*
+                // 2. ChatGPT로 설명 가져오기 및 TeeniepingInfo.details에 저장
+                var enhancedTeenieping = similarTeenieping
                 try {
                     Log.d(TAG, "Fetching ChatGPT description for: ${similarTeenieping.name}")
                     val descriptionResult = getChatGptDescriptionUseCase(similarTeenieping.name)
                     if (descriptionResult.isSuccess) {
-                        chatGptDescription = descriptionResult.getOrNull()
+                        val chatGptDescription = descriptionResult.getOrNull()
                         Log.d(TAG, "ChatGPT description fetched: $chatGptDescription")
+                        
+                        // ChatGPT 설명을 details 필드에 저장, description은 원래 값 유지
+                        enhancedTeenieping = similarTeenieping.copy(
+                            description = similarTeenieping.description, // 원래 설명 유지
+                            details = chatGptDescription // ChatGPT 설명은 details에 저장
+                        )
+                        Log.d(TAG, "Enhanced teenieping - description: ${enhancedTeenieping.description}")
+                        Log.d(TAG, "Enhanced teenieping - details: ${enhancedTeenieping.details}")
                     } else {
                         Log.w(TAG, "Failed to fetch ChatGPT description: ${descriptionResult.exceptionOrNull()?.message}")
                     }
                 } catch (e: Exception) {
                     Log.e(TAG, "Error during ChatGPT description fetching", e)
                 }
-                */
 
                 // 3. UserImage 및 AnalysisResult 객체 생성
                 val userImage = UserImage(
@@ -95,10 +100,9 @@ class SelectImageViewModel @Inject constructor(
                 )
                 val analysisResult = AnalysisResult(
                     userImage = userImage,
-                    similarTeenieping = similarTeenieping,
+                    similarTeenieping = enhancedTeenieping, // ChatGPT 설명이 포함된 TeeniepingInfo 사용
                     similarityScore = similarityScore,
-                    analysisTimestamp = Date().time,
-                    chatGptDescription = chatGptDescription // 가져온 설명 포함
+                    analysisTimestamp = Date().time
                 )
                 Log.d(TAG, "AnalysisResult created: $analysisResult")
 
