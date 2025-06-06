@@ -10,6 +10,7 @@ import com.sss.mysimilarteenieping.data.model.UserImage
 import com.sss.mysimilarteenieping.data.model.ShoppingLink
 import kotlinx.coroutines.flow.first
 import com.sss.mysimilarteenieping.domain.usecase.GetChatGptDescriptionUseCase
+import com.sss.mysimilarteenieping.domain.usecase.GetChatGptImageComparisonUseCase
 import com.sss.mysimilarteenieping.domain.usecase.GetSimilarTeeniepingUseCase
 import com.sss.mysimilarteenieping.domain.usecase.SaveAnalysisResultUseCase
 import com.sss.mysimilarteenieping.domain.usecase.GetShoppingInfoUseCase
@@ -37,6 +38,7 @@ class SelectImageViewModel @Inject constructor(
     private val getSimilarTeeniepingUseCase: GetSimilarTeeniepingUseCase,
     private val saveAnalysisResultUseCase: SaveAnalysisResultUseCase,
     private val getChatGptDescriptionUseCase: GetChatGptDescriptionUseCase,
+    private val getChatGptImageComparisonUseCase: GetChatGptImageComparisonUseCase,
     private val getShoppingInfoUseCase: GetShoppingInfoUseCase
 ) : ViewModel() {
 
@@ -96,6 +98,21 @@ class SelectImageViewModel @Inject constructor(
                     Log.e(TAG, "Error during ChatGPT description fetching", e)
                 }
 
+                // 2.5. ChatGPT로 이미지 비교 분석
+                var chatGptImageComparison = ""
+                try {
+                    Log.d(TAG, "Fetching ChatGPT image comparison for: ${similarTeenieping.name}")
+                    val comparisonResult = getChatGptImageComparisonUseCase(bitmap, enhancedTeenieping)
+                    if (comparisonResult.isSuccess) {
+                        chatGptImageComparison = comparisonResult.getOrNull() ?: ""
+                        Log.d(TAG, "ChatGPT image comparison fetched: $chatGptImageComparison")
+                    } else {
+                        Log.w(TAG, "Failed to fetch ChatGPT image comparison: ${comparisonResult.exceptionOrNull()?.message}")
+                    }
+                } catch (e: Exception) {
+                    Log.e(TAG, "Error during ChatGPT image comparison", e)
+                }
+
                 // 3. 네이버 쇼핑 API에서 관련 상품 링크 수집
                 val shoppingLinks = try {
                     Log.d(TAG, "Fetching shopping links for: ${similarTeenieping.name}")
@@ -132,7 +149,8 @@ class SelectImageViewModel @Inject constructor(
                     similarTeenieping = enhancedTeenieping, // ChatGPT 설명이 포함된 TeeniepingInfo 사용
                     similarityScore = similarityScore,
                     analysisTimestamp = Date().time,
-                    shoppingLinks = finalShoppingLinks // 최종 쇼핑 링크 포함
+                    shoppingLinks = finalShoppingLinks, // 최종 쇼핑 링크 포함
+                    chatGptDescription = chatGptImageComparison // ChatGPT 이미지 비교 분석 결과
                 )
                 Log.d(TAG, "AnalysisResult created with ${finalShoppingLinks.size} shopping links")
                 finalShoppingLinks.forEachIndexed { index, link ->

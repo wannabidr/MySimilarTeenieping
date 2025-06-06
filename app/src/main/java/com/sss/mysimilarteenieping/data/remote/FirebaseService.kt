@@ -187,7 +187,8 @@ class FirebaseService(
                 similarTeenieping = teenieping,
                 similarityScore = (data["similarityScore"] as? Number)?.toFloat() ?: 0.0f,
                 analysisTimestamp = (data["analysisTimestamp"] as? Number)?.toLong() ?: 0L,
-                shoppingLinks = shoppingLinks
+                shoppingLinks = shoppingLinks,
+                chatGptDescription = data["chatGptDescription"] as? String ?: ""
             )
             
             Log.d(TAG, "Successfully parsed AnalysisResult with ${shoppingLinks.size} shopping links")

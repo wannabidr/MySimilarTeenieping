@@ -44,7 +44,8 @@ object TestData {
                 itemImageUrl = "https://shopping.phinf.naver.net/main_8394728/83947280002.jpg",
                 storeName = "캐릭터 월드"
             )
-        )
+        ),
+        chatGptDescription = "둥글둥글한 얼굴과 밝은 미소가 방글핑과 정말 닮았어요! 특히 반짝이는 눈과 따뜻한 표정이 똑같아서 깜짝 놀랐답니다."
     )
 
     val dummyUserImage2 = UserImage(
@@ -73,7 +74,8 @@ object TestData {
                 itemImageUrl = "https://shopping.phinf.naver.net/main_8394729/83947290001.jpg",
                 storeName = "믿을만한 쇼핑몰"
             )
-        )
+        ),
+        chatGptDescription = "진지하고 신뢰감 있는 표정이 믿어핑과 완전히 똑같아요! 당신의 든든한 모습이 믿어핑의 특징을 그대로 보여주고 있답니다."
     )
 
     val previewHistoryList: List<AnalysisResult> = listOf(
@@ -109,6 +111,7 @@ object TestData {
         ),
         similarityScore = 0.92f,
         analysisTimestamp = Date().time,
-        shoppingLinks = previewShoppingLinks
+        shoppingLinks = previewShoppingLinks,
+        chatGptDescription = "햇살처럼 밝은 미소와 반짝이는 눈이 해핑과 정말 똑같아요! 당신의 긍정적인 에너지가 해핑의 따뜻함과 완전히 일치한답니다."
     )
 }
