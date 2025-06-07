@@ -20,7 +20,7 @@ import java.nio.channels.FileChannel
  */
 class TeeniepingClassifier(
     private val context: Context,
-    private val modelPath: String = "keras_model_term_04.tflite", // assets 폴더 내 모델 파일 경로
+    private val modelPath: String = "keras_model_term_05.tflite", // assets 폴더 내 모델 파일 경로
     private val labelPath: String = "teenieping_labels.txt"  // assets 폴더 내 레이블 파일 경로
 ) {
 
@@ -199,10 +199,10 @@ class TeeniepingClassifier(
             if (classIndex < labels.size) {
                 val teeniepingName = labels[classIndex]
                 val teeniepingInfo = TeeniepingInfo(
-                    id = teeniepingName,
+                    id = classIndex, // ML 모델이 예측한 인덱스 값을 id로 설정
                     name = teeniepingName,
                     description = "${teeniepingName}과 ${String.format("%.1f", confidence * 100)}% 닮았어요!",
-                    imagePath = "teenieping_images/${teeniepingName.lowercase()}.png" // assets 내 이미지 경로
+                    imagePath = "teenieping_images/${teeniepingName}.jpg" // assets 내 이미지 경로
                 )
                 Pair(teeniepingInfo, confidence)
             } else {

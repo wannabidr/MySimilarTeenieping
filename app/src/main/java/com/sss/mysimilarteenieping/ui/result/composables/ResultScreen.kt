@@ -43,6 +43,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.unit.sp
 import com.sss.mysimilarteenieping.ui.result.ResultViewModel
+import com.sss.mysimilarteenieping.BuildConfig
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -157,7 +158,7 @@ fun ResultContent(
 
         AsyncImage(
             model = ImageRequest.Builder(LocalContext.current)
-                .data(result.similarTeenieping.imagePath)
+                .data("file:///android_asset/${result.similarTeenieping.imagePath}")
                 .crossfade(true)
                 .build(),
             placeholder = rememberVectorPainter(image = Icons.Filled.Face),
@@ -178,38 +179,82 @@ fun ResultContent(
             modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
         )
 
-        Text(
-            text = "분석일시: ${SimpleDateFormat("yyyy-MM-dd HH:mm", Locale.getDefault()).format(Date(result.analysisTimestamp))}",
-            style = MaterialTheme.typography.labelSmall,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-            modifier = Modifier.padding(bottom = 16.dp)
-        )
+        // ChatGPT 생성 설명 표시 (details 필드)
+        result.similarTeenieping.details?.let { details ->
+            if (details.isNotBlank()) {
+                Spacer(modifier = Modifier.height(8.dp))
+                Card(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp),
+                    colors = CardDefaults.cardColors(
+                        containerColor = MaterialTheme.colorScheme.secondaryContainer
+                    )
+                ) {
+                    Column(
+                        modifier = Modifier.padding(16.dp)
+                    ) {
+                        Text(
+                            text = "✨ 당신만을 위한 특별한 설명",
+                            style = MaterialTheme.typography.titleSmall,
+                            color = MaterialTheme.colorScheme.primary,
+                            modifier = Modifier.padding(bottom = 8.dp)
+                        )
+                        Text(
+                            text = details,
+                            style = MaterialTheme.typography.bodyMedium,
+                            textAlign = TextAlign.Start,
+                            lineHeight = 20.sp
+                        )
+                    }
+                }
+            }
+        }
+
+//        Text(
+//            text = "분석일시: ${SimpleDateFormat("yyyy-MM-dd HH:mm", Locale.getDefault()).format(Date(result.analysisTimestamp))}",
+//            style = MaterialTheme.typography.labelSmall,
+//            color = MaterialTheme.colorScheme.onSurfaceVariant,
+//            modifier = Modifier.padding(bottom = 16.dp)
+//        )
 
         Divider()
 
-        // Shopping Links
+        // Shopping Links Section
+        Spacer(modifier = Modifier.height(16.dp))
+        Text(
+            text = stringResource(id = R.string.result_shopping_links_title),
+            style = MaterialTheme.typography.titleMedium,
+            modifier = Modifier.padding(bottom = 8.dp)
+        )
+        
+        // Debug info
+//        if (BuildConfig.DEBUG) {
+//            Text(
+//                text = "Debug: isLoading=$isShoppingLoading, linksCount=${shoppingLinks.size}",
+//                style = MaterialTheme.typography.bodySmall,
+//                color = MaterialTheme.colorScheme.error,
+//                modifier = Modifier.padding(4.dp)
+//            )
+//        }
+        
         if (isShoppingLoading) {
             ShoppingLinksLoadingSkeletons()
-        } else {
-            if (shoppingLinks.isNotEmpty()) {
-                Spacer(modifier = Modifier.height(16.dp))
-                Text(
-                    text = stringResource(id = R.string.result_shopping_links_title), // R.string.result_shopping_links_title 정의 필요
-                    style = MaterialTheme.typography.titleMedium,
-                    modifier = Modifier.padding(bottom = 8.dp)
+        } else if (shoppingLinks.isNotEmpty()) {
+            shoppingLinks.forEach { shoppingLink ->
+                ShoppingLinkItem(
+                    link = shoppingLink,
+                    onClick = { onShoppingLinkClicked(shoppingLink.linkUrl) }
                 )
-                shoppingLinks.forEach {
-                    shoppingLink ->
-                    ShoppingLinkItem(link = shoppingLink, onClick = { onShoppingLinkClicked(shoppingLink.linkUrl) })
-                    Spacer(modifier = Modifier.height(8.dp))
-                }
-            } else {
-                Text(
-                    text = stringResource(id = R.string.result_no_shopping_links_found), // R.string.result_no_shopping_links_found 정의 필요
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
+                Spacer(modifier = Modifier.height(8.dp))
             }
+        } else {
+            Text(
+                text = stringResource(id = R.string.result_no_shopping_links_found),
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.padding(16.dp)
+            )
         }
     }
 }

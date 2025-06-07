@@ -5,6 +5,7 @@ import android.content.res.AssetManager
 import com.google.gson.Gson
 import com.sss.mysimilarteenieping.data.remote.FirebaseService
 import com.sss.mysimilarteenieping.data.remote.ChatGptApiService
+import com.sss.mysimilarteenieping.data.remote.NaverShoppingApiService
 import com.sss.mysimilarteenieping.data.repository.ShoppingRepository
 import com.sss.mysimilarteenieping.data.repository.ShoppingRepositoryImpl
 import com.sss.mysimilarteenieping.data.repository.HistoryRepository
@@ -44,9 +45,9 @@ object RepositoryModule {
     @Singleton
     @Provides
     fun provideShoppingRepository(
-        // TODO: 추후 NaverShoppingApiService 주입 (NetworkModule에서 제공)
+        naverShoppingApiService: NaverShoppingApiService
     ): ShoppingRepository {
-        return ShoppingRepositoryImpl(/* navverShoppingApiService */)
+        return ShoppingRepositoryImpl(naverShoppingApiService)
     }
 
     @Singleton

@@ -24,7 +24,7 @@ interface TeeniepingRepository {
     /**
      * 특정 ID의 티니핑 정보를 가져옵니다.
      */
-    suspend fun getTeeniepingById(id: String): TeeniepingInfo?
+    suspend fun getTeeniepingById(id: Int): TeeniepingInfo?
 
     /**
      * (관리자용, 선택 사항) 새로운 티니핑 정보를 추가합니다.
@@ -66,7 +66,7 @@ class TeeniepingRepositoryImpl(
         }
     }.flowOn(Dispatchers.IO) // Perform file I/O on IO dispatcher
 
-    override suspend fun getTeeniepingById(id: String): TeeniepingInfo? = withContext(Dispatchers.IO) {
+    override suspend fun getTeeniepingById(id: Int): TeeniepingInfo? = withContext(Dispatchers.IO) {
         if (cachedTeeniepings == null) {
             // Ensure data is loaded if not already cached (e.g. by calling getAllTeeniepings first or loading here)
             // This basic implementation assumes getAllTeeniepings has been called or will be called.

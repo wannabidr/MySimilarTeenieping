@@ -26,6 +26,8 @@ android {
         // 배포할 일이 있으면 proguard rule 세팅할 것
 
         buildConfigField("String", "CHAT_GPT_API_KEY", properties["CHAT_GPT_API_KEY"].toString())
+        buildConfigField("String", "NAVER_CLIENT_ID", properties["NAVER_CLIENT_ID"].toString())
+        buildConfigField("String", "NAVER_CLIENT_SECRET", properties["NAVER_CLIENT_SECRET"].toString())
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
