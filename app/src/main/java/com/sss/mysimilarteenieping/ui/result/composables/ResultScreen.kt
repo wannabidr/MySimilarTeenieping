@@ -158,7 +158,7 @@ fun ResultContent(
 
         AsyncImage(
             model = ImageRequest.Builder(LocalContext.current)
-                .data(result.similarTeenieping.imagePath)
+                .data("file:///android_asset/${result.similarTeenieping.imagePath}")
                 .crossfade(true)
                 .build(),
             placeholder = rememberVectorPainter(image = Icons.Filled.Face),
@@ -211,12 +211,12 @@ fun ResultContent(
             }
         }
 
-        Text(
-            text = "분석일시: ${SimpleDateFormat("yyyy-MM-dd HH:mm", Locale.getDefault()).format(Date(result.analysisTimestamp))}",
-            style = MaterialTheme.typography.labelSmall,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-            modifier = Modifier.padding(bottom = 16.dp)
-        )
+//        Text(
+//            text = "분석일시: ${SimpleDateFormat("yyyy-MM-dd HH:mm", Locale.getDefault()).format(Date(result.analysisTimestamp))}",
+//            style = MaterialTheme.typography.labelSmall,
+//            color = MaterialTheme.colorScheme.onSurfaceVariant,
+//            modifier = Modifier.padding(bottom = 16.dp)
+//        )
 
         Divider()
 
@@ -229,14 +229,14 @@ fun ResultContent(
         )
         
         // Debug info
-        if (BuildConfig.DEBUG) {
-            Text(
-                text = "Debug: isLoading=$isShoppingLoading, linksCount=${shoppingLinks.size}",
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.error,
-                modifier = Modifier.padding(4.dp)
-            )
-        }
+//        if (BuildConfig.DEBUG) {
+//            Text(
+//                text = "Debug: isLoading=$isShoppingLoading, linksCount=${shoppingLinks.size}",
+//                style = MaterialTheme.typography.bodySmall,
+//                color = MaterialTheme.colorScheme.error,
+//                modifier = Modifier.padding(4.dp)
+//            )
+//        }
         
         if (isShoppingLoading) {
             ShoppingLinksLoadingSkeletons()

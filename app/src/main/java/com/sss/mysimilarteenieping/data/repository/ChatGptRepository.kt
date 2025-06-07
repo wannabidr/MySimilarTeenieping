@@ -52,7 +52,7 @@ class ChatGptRepositoryImpl @Inject constructor(
                         content = prompt
                     )
                 ),
-                maxTokens = 150,
+                maxTokens = 250,
                 temperature = 0.7
             )
             
@@ -97,6 +97,7 @@ class ChatGptRepositoryImpl @Inject constructor(
             append("\n\n설명은 다음 조건을 만족해야 합니다:")
             append("\n- 아이들이 이해하기 쉬운 언어 사용")
             append("\n- 티니핑의 특별한 능력이나 성격 포함")
+            append("\n- 티니핑은 동물이 아니라 만화 캐릭터입니다. 만화 캐릭터 다운 스토리를 만들어 설명하세요.")
             append("\n- 긍정적이고 즐거운 톤")
             append("\n- 2-3문장으로 간단명료하게")
             append("\n- 반말로 친근하게 작성")
