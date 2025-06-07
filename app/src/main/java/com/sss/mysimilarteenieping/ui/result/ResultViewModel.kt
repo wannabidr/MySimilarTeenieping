@@ -69,9 +69,15 @@ class ResultViewModel @Inject constructor(
                     
                     // AnalysisResult에 이미 쇼핑 링크가 있으면 사용하고, 없으면 새로 가져오기
                     if (analysisResult.shoppingLinks.isNotEmpty()) {
-                        Log.d(TAG, "Using saved shopping links from AnalysisResult")
+                        Log.d(TAG, "Using saved shopping links from AnalysisResult: ${analysisResult.shoppingLinks.size} links")
+                        analysisResult.shoppingLinks.forEachIndexed { index, link ->
+                            Log.d(TAG, "Saved shopping link $index: ${link.itemName} -> ${link.linkUrl}")
+                            Log.d(TAG, "Saved shopping image $index: ${link.itemImageUrl}")
+                            Log.d(TAG, "Saved shopping store $index: ${link.storeName}")
+                        }
                         _shoppingLinksState.value = analysisResult.shoppingLinks
                         _shoppingLoadingState.value = false
+                        Log.d(TAG, "Shopping links state updated with ${analysisResult.shoppingLinks.size} items")
                     } else {
                         Log.d(TAG, "No shopping links in AnalysisResult, fetching new ones")
                         fetchShoppingInfo(analysisResult.similarTeenieping.name)

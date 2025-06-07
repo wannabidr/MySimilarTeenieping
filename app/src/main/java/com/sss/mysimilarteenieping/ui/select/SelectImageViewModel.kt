@@ -117,22 +117,28 @@ class SelectImageViewModel @Inject constructor(
                 val shoppingLinks = try {
                     Log.d(TAG, "Fetching shopping links for: ${similarTeenieping.name}")
                     val links = getShoppingInfoUseCase(similarTeenieping.name).first()
-                    Log.d(TAG, "Successfully fetched ${links.size} shopping links")
+                    Log.d(TAG, "Successfully fetched ${links.size} shopping links from UseCase")
                     links.forEachIndexed { index, link ->
-                        Log.d(TAG, "Shopping link $index: ${link.itemName} -> ${link.linkUrl}")
+                        Log.d(TAG, "Received shopping link $index: ${link.itemName} -> ${link.linkUrl}")
+                        Log.d(TAG, "Received shopping image $index: ${link.itemImageUrl}")
+                        Log.d(TAG, "Received shopping store $index: ${link.storeName}")
                     }
                     links
                 } catch (e: Exception) {
                     Log.e(TAG, "Failed to fetch shopping links", e)
+                    Log.e(TAG, "Exception details: ${e.message}")
+                    Log.e(TAG, "Exception stackTrace: ${e.stackTrace.contentToString()}")
                     // Fallback: 쇼핑 API 실패 시 더미 링크 생성
                     createFallbackShoppingLinks(similarTeenieping.name)
                 }
                 
                 // 쇼핑 링크가 비어있다면 강제로 더미 데이터 추가
                 val finalShoppingLinks = if (shoppingLinks.isEmpty()) {
-                    Log.w(TAG, "No shopping links found, creating dummy links")
+                    Log.w(TAG, "No shopping links found from API/Repository, creating fallback dummy links")
+                    Log.w(TAG, "Original shoppingLinks size was: ${shoppingLinks.size}")
                     createFallbackShoppingLinks(similarTeenieping.name)
                 } else {
+                    Log.d(TAG, "Using real shopping links from API: ${shoppingLinks.size} items")
                     shoppingLinks
                 }
                 
@@ -154,7 +160,9 @@ class SelectImageViewModel @Inject constructor(
                 )
                 Log.d(TAG, "AnalysisResult created with ${finalShoppingLinks.size} shopping links")
                 finalShoppingLinks.forEachIndexed { index, link ->
-                    Log.d(TAG, "Final shopping link $index: ${link.itemName}")
+                    Log.d(TAG, "AnalysisResult shopping link $index: ${link.itemName} -> ${link.linkUrl}")
+                    Log.d(TAG, "AnalysisResult shopping image $index: ${link.itemImageUrl}")
+                    Log.d(TAG, "AnalysisResult shopping store $index: ${link.storeName}")
                 }
 
                 // 5. 결과 저장 (Firestore 및 Storage)
@@ -180,7 +188,8 @@ class SelectImageViewModel @Inject constructor(
      * 쇼핑 API 실패 시 사용할 fallback 더미 데이터 생성
      */
     private fun createFallbackShoppingLinks(teeniepingName: String): List<ShoppingLink> {
-        Log.d(TAG, "Creating fallback shopping links for: $teeniepingName")
+        Log.w(TAG, "🚨 CREATING FALLBACK DUMMY DATA for: $teeniepingName")
+        Log.w(TAG, "🚨 This means the real Naver Shopping API failed or returned empty results")
         return listOf(
             ShoppingLink(
                 itemName = "$teeniepingName 티니핑 피규어 세트 (정품)",

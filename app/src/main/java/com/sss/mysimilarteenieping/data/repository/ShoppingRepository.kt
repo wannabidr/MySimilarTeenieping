@@ -5,6 +5,7 @@ import com.sss.mysimilarteenieping.data.model.ShoppingLink
 import com.sss.mysimilarteenieping.data.remote.NaverShoppingApiService
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.catch
 import java.net.URLEncoder
 import java.text.NumberFormat
 import java.util.Locale
@@ -32,84 +33,90 @@ class ShoppingRepositoryImpl @Inject constructor(
     }
 
     override fun getShoppingInfo(query: String): Flow<List<ShoppingLink>> = flow {
-        try {
-            Log.d(TAG, "Searching shopping info for: $query")
+        Log.d(TAG, "Searching shopping info for: $query")
+        
+        // 티니핑 관련 검색어로 확장 및 UTF-8 인코딩 확인
+        val searchQuery = "$query 티니핑 굿즈"
+        Log.d(TAG, "Search query: $searchQuery")
+        
+        // API 호출 전 헤더 정보 로깅
+        Log.d(TAG, "Calling Naver Shopping API...")
+        
+        val response = naverShoppingApiService.searchShopping(
+            query = searchQuery,
+            display = 6,
+            start = 1,
+            sort = "sim",
+            exclude = "used:rental:cbshop" // 중고, 렌탈, 해외직구 제외
+        )
+        
+        Log.d(TAG, "API Response: ${response.code()}, Success: ${response.isSuccessful}")
+        Log.d(TAG, "Response headers: ${response.headers()}")
+        
+        if (response.isSuccessful) {
+            val naverResponse = response.body()
+            Log.d(TAG, "API Response body: $naverResponse")
+            Log.d(TAG, "API Response is successful: true")
             
-            // 티니핑 관련 검색어로 확장 및 UTF-8 인코딩 확인
-            val searchQuery = "$query 티니핑 굿즈"
-            Log.d(TAG, "Search query: $searchQuery")
-            
-            // API 호출 전 헤더 정보 로깅
-            Log.d(TAG, "Calling Naver Shopping API...")
-            
-            val response = naverShoppingApiService.searchShopping(
-                query = searchQuery,
-                display = 6,
-                start = 1,
-                sort = "sim",
-                exclude = "used:rental:cbshop" // 중고, 렌탈, 해외직구 제외
-            )
-            
-            Log.d(TAG, "API Response: ${response.code()}, Success: ${response.isSuccessful}")
-            Log.d(TAG, "Response headers: ${response.headers()}")
-            
-            if (response.isSuccessful) {
-                val naverResponse = response.body()
-                Log.d(TAG, "API Response body: $naverResponse")
+            if (naverResponse != null) {
+                Log.d(TAG, "API Response body is not null")
+                Log.d(TAG, "Total available items: ${naverResponse.total}")
+                Log.d(TAG, "Items in response: ${naverResponse.items.size}")
                 
-                if (naverResponse != null) {
-                    Log.d(TAG, "Total available items: ${naverResponse.total}")
-                    Log.d(TAG, "Items in response: ${naverResponse.items.size}")
+                val shoppingLinks = naverResponse.items.take(6).mapIndexed { index, item ->
+                    Log.d(TAG, "Processing item [$index]: title=${item.title}, link=${item.link}, image=${item.image}, mall=${item.mallName}")
                     
-                    val shoppingLinks = naverResponse.items.take(6).mapIndexed { index, item ->
-                        Log.d(TAG, "Processing item [$index]: title=${item.title}, link=${item.link}, image=${item.image}, mall=${item.mallName}")
-                        
-                        ShoppingLink(
-                            itemName = cleanTitle(item.title),
-                            linkUrl = item.link,
-                            itemImageUrl = item.image.takeIf { it.isNotEmpty() } ?: "",
-                            storeName = item.mallName.ifEmpty { "네이버 쇼핑" }
-                        )
-                    }
+                    val shoppingLink = ShoppingLink(
+                        itemName = cleanTitle(item.title),
+                        linkUrl = item.link,
+                        itemImageUrl = item.image.takeIf { it.isNotEmpty() } ?: "",
+                        storeName = item.mallName.ifEmpty { "네이버 쇼핑" }
+                    )
                     
-                    Log.d(TAG, "Successfully processed ${shoppingLinks.size} shopping items")
-                    shoppingLinks.forEach { link ->
-                        Log.d(TAG, "Final link: ${link.itemName} -> ${link.linkUrl}")
-                        Log.d(TAG, "Final image: ${link.itemImageUrl}")
-                    }
+                    Log.d(TAG, "Created ShoppingLink [$index]: itemName=${shoppingLink.itemName}, linkUrl=${shoppingLink.linkUrl}, imageUrl=${shoppingLink.itemImageUrl}, storeName=${shoppingLink.storeName}")
                     
-                    if (shoppingLinks.isNotEmpty()) {
-                        emit(shoppingLinks)
-                    } else {
-                        Log.w(TAG, "API returned empty items, using dummy data")
-                        emit(getDummyShoppingLinks(query))
-                    }
+                    shoppingLink
+                }
+                
+                Log.d(TAG, "Successfully processed ${shoppingLinks.size} shopping items")
+                shoppingLinks.forEachIndexed { index, link ->
+                    Log.d(TAG, "Final ShoppingLink [$index]: ${link.itemName} -> ${link.linkUrl}")
+                    Log.d(TAG, "Final image [$index]: ${link.itemImageUrl}")
+                }
+                
+                if (shoppingLinks.isNotEmpty()) {
+                    Log.d(TAG, "Emitting ${shoppingLinks.size} shopping links")
+                    emit(shoppingLinks)
+                    Log.d(TAG, "Successfully emitted shopping links")
                 } else {
-                    Log.w(TAG, "API response body is null, using dummy data")
-                    emit(getDummyShoppingLinks(query))
+                    Log.w(TAG, "API returned empty items, emitting empty list")
+                    emit(emptyList())
                 }
             } else {
-                val errorBody = response.errorBody()?.string()
-                Log.w(TAG, "API call failed: ${response.code()} ${response.message()}")
-                Log.w(TAG, "Error body: $errorBody")
-                
-                // 특정 에러 코드 처리
-                when (response.code()) {
-                    403 -> Log.e(TAG, "403 Forbidden - API 권한이 없습니다. 네이버 개발자센터에서 검색 API가 활성화되어 있는지 확인하세요.")
-                    400 -> Log.e(TAG, "400 Bad Request - 요청 파라미터에 오류가 있습니다: $errorBody")
-                    500 -> Log.e(TAG, "500 Internal Server Error - 네이버 서버 내부 오류")
-                }
-                
-                // 실패 시 더미 데이터 반환
-                emit(getDummyShoppingLinks(query))
+                Log.w(TAG, "API response body is null, emitting empty list")
+                emit(emptyList())
+            }
+        } else {
+            Log.w(TAG, "API Response is NOT successful: ${response.code()}")
+            val errorBody = response.errorBody()?.string()
+            Log.w(TAG, "API call failed: ${response.code()} ${response.message()}")
+            Log.w(TAG, "Error body: $errorBody")
+            
+            // 특정 에러 코드 처리
+            when (response.code()) {
+                403 -> Log.e(TAG, "403 Forbidden - API 권한이 없습니다. 네이버 개발자센터에서 검색 API가 활성화되어 있는지 확인하세요.")
+                400 -> Log.e(TAG, "400 Bad Request - 요청 파라미터에 오류가 있습니다: $errorBody")
+                500 -> Log.e(TAG, "500 Internal Server Error - 네이버 서버 내부 오류")
             }
             
-        } catch (e: Exception) {
-            Log.e(TAG, "Exception during API call: ${e.message}", e)
-            Log.e(TAG, "Exception type: ${e.javaClass.simpleName}")
-            // 에러 시 더미 데이터 반환
-            emit(getDummyShoppingLinks(query))
+            // 실패 시 빈 리스트 반환 (더미 데이터는 ViewModel에서 처리)
+            emit(emptyList())
         }
+    }.catch { e: Throwable ->
+        Log.e(TAG, "Exception during API call: ${e.message}", e)
+        Log.e(TAG, "Exception type: ${e::class.simpleName}")
+        // 에러 시 빈 리스트 반환 (더미 데이터는 ViewModel에서 처리)
+        emit(emptyList())
     }
     
     private fun cleanTitle(title: String): String {
