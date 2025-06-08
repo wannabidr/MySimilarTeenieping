@@ -1,5 +1,7 @@
 package com.sss.mysimilarteenieping.ui.result.composables
 
+import android.graphics.BitmapFactory
+import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
@@ -39,11 +41,18 @@ import com.sss.mysimilarteenieping.util.TestData // Added import for TestData
 import java.text.SimpleDateFormat
 import java.util.*
 import androidx.compose.foundation.background
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.unit.sp
 import com.sss.mysimilarteenieping.ui.result.ResultViewModel
 import com.sss.mysimilarteenieping.BuildConfig
+import java.io.IOException
+import java.text.Normalizer
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -156,9 +165,29 @@ fun ResultContent(
             modifier = Modifier.padding(bottom = 8.dp)
         )
 
+        val context = LocalContext.current
+
+        var teeniepingAssetPath = result.similarTeenieping.imagePath.normalizeToNFC()
+        var teeniepingImageUri by remember { mutableStateOf("file:///android_asset/$teeniepingAssetPath") }
+
+        // 디버깅 코드: 컴포저블이 로드될 때 asset 경로를 확인하고 Logcat에 출력합니다.
+        // Android Studio의 Logcat에서 "AssetDebugger" 태그로 필터링하여 확인할 수 있습니다.
+        LaunchedEffect(teeniepingAssetPath) {
+            Log.d("AssetDebugger", "Attempting to load asset from: $teeniepingAssetPath")
+            try {
+                context.assets.open(teeniepingAssetPath).use {
+                    Log.i("AssetDebugger", "Success! Asset found at path: $teeniepingAssetPath")
+                }
+            } catch (e: Exception) {
+                Log.w("AssetDebugger", "Error loading asset from path: $teeniepingAssetPath", e)
+                teeniepingAssetPath = result.similarTeenieping.imagePath.normalizeToNFD()
+                teeniepingImageUri = "file:///android_asset/$teeniepingAssetPath"
+            }
+        }
+
         AsyncImage(
             model = ImageRequest.Builder(LocalContext.current)
-                .data("file:///android_asset/${result.similarTeenieping.imagePath}")
+                .data(teeniepingImageUri)
                 .crossfade(true)
                 .build(),
             placeholder = rememberVectorPainter(image = Icons.Filled.Face),
@@ -356,6 +385,28 @@ fun ErrorStateView(
             Text(stringResource(id = R.string.button_retry)) // R.string.button_retry 정의 필요
         }
     }
+}
+
+/**
+ * 주어진 문자열을 NFC(완성형)으로 정규화합니다.
+ */
+fun String.normalizeToNFC(): String {
+    return Normalizer.normalize(this, Normalizer.Form.NFC)
+}
+
+/**
+ * 주어진 문자열을 NFD(조합형)으로 정규화합니다.
+ */
+fun String.normalizeToNFD(): String {
+    return Normalizer.normalize(this, Normalizer.Form.NFD)
+}
+
+/**
+ * 두 문자열이 한글 정규화 형태를 무시하고 논리적으로 동등한지 확인합니다.
+ * 일반적으로 NFC(완성형)으로 정규화하여 비교하는 것이 가장 일반적입니다.
+ */
+fun String.isHangulEquivalent(other: String): Boolean {
+    return this.normalizeToNFC() == other.normalizeToNFC()
 }
 
 // Previews
