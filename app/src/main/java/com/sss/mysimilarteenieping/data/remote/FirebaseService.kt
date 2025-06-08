@@ -12,6 +12,7 @@ import kotlinx.coroutines.tasks.await
 import java.util.UUID
 
 private const val TAG = "FirebaseService"
+private const val FIREBASE_WRITE_ENABLED = true // true: Firebase 쓰기 활성화, false: 비활성화
 
 /**
  * Firebase Firestore 및 Firebase Storage 관련 로직을 통합하거나 분리하여 제공하는 서비스 클래스
@@ -31,6 +32,10 @@ class FirebaseService(
      * 파일을 Firebase Storage에 업로드하고 다운로드 URL을 반환합니다.
      */
     suspend fun uploadImage(localFileUri: Uri, fileName: String = UUID.randomUUID().toString()): Result<String> {
+        if (!FIREBASE_WRITE_ENABLED) {
+            Log.d(TAG, "uploadImage: Firebase write is disabled. Skipping image upload.")
+            return Result.success("") // 빈 URL 반환
+        }
         Log.d(TAG, "uploadImage: localFileUri = $localFileUri, fileName = $fileName")
         return try {
             val storageRef = storage.reference.child("$userImagesFolder/$fileName")
@@ -46,6 +51,10 @@ class FirebaseService(
      * 분석 결과를 Firestore에 저장합니다.
      */
     suspend fun saveAnalysisResult(analysisResult: AnalysisResult): Result<String> {
+        if (!FIREBASE_WRITE_ENABLED) {
+            Log.d(TAG, "saveAnalysisResult: Firebase write is disabled. Skipping analysis result save.")
+            return Result.success(UUID.randomUUID().toString()) // 로컬에서만 사용할 임시 ID 반환
+        }
         Log.d(TAG, "saveAnalysisResult: triggered, analysisResult = $analysisResult")
         return try {
             val documentReference = historyCollection.add(analysisResult).await()
@@ -128,6 +137,10 @@ class FirebaseService(
      * ID로 분석 결과를 Firestore에서 삭제합니다.
      */
     suspend fun deleteAnalysisResult(id: String): Result<Unit> {
+        if (!FIREBASE_WRITE_ENABLED) {
+            Log.d(TAG, "deleteAnalysisResult: Firebase write is disabled. Skipping deletion.")
+            return Result.success(Unit)
+        }
         Log.d(TAG, "deleteAnalysisResult: id = $id")
         return try {
             historyCollection.document(id).delete().await()
