@@ -29,7 +29,7 @@ fun getCorrectlyOrientedBitmap(context: Context, imageUri: Uri): Bitmap? {
                     ExifInterface.ORIENTATION_ROTATE_90 -> matrix.postRotate(90f)
                     ExifInterface.ORIENTATION_ROTATE_180 -> matrix.postRotate(180f)
                     ExifInterface.ORIENTATION_ROTATE_270 -> matrix.postRotate(270f)
-                    else -> return bitmap // 회전이 필요 없는 경우 원본 비트맵 반환
+                    else -> return bitmap 
                 }
                 
                 return Bitmap.createBitmap(bitmap, 0, 0, bitmap.width, bitmap.height, matrix, true)

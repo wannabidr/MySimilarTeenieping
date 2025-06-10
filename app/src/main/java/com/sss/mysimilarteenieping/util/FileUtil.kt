@@ -13,7 +13,6 @@ import java.util.*
  * @return 생성된 이미지 파일 객체
  */
 fun createImageFile(context: Context): File {
-    // 파일 이름에 타임스탬프를 사용하여 고유성 보장
     val timeStamp: String = SimpleDateFormat("yyyyMMdd_HHmmss", Locale.US).format(Date())
     val storageDir: File? = context.externalCacheDir
     

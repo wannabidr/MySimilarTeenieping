@@ -10,7 +10,6 @@ val Purple40 = Color(0xFF6650a4)
 val PurpleGrey40 = Color(0xFF625b71)
 val Pink40 = Color(0xFF7D5260)
 
-// 파스텔톤 색상 추가
 val PastelPink = Color(0xFFFF99CC)
 val PastelSkyBlue = Color(0xFF99CCFF)
 val PastelPurple = Color(0xFFCC99FF)
@@ -20,5 +19,4 @@ val PastelGreen = Color(0xFFC1FFC1)
 val White = Color(0xFFFFFFFF)
 val Black = Color(0xFF000000)
 
-// 가독성을 위한 짙은 텍스트 색상
 val TextColor = Color(0xFF2C2C2C)

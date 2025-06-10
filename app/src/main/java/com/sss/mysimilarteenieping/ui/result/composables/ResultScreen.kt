@@ -32,7 +32,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
-import com.sss.mysimilarteenieping.R // For placeholder, error drawables and strings
+import com.sss.mysimilarteenieping.R
 import com.sss.mysimilarteenieping.data.model.AnalysisResult
 import com.sss.mysimilarteenieping.data.model.ShoppingLink
 import com.sss.mysimilarteenieping.data.model.TeeniepingInfo
@@ -40,7 +40,7 @@ import com.sss.mysimilarteenieping.data.model.UserImage
 import com.sss.mysimilarteenieping.ui.common.GradientBox
 import com.sss.mysimilarteenieping.ui.result.ResultUiState
 import com.sss.mysimilarteenieping.ui.theme.MySimilarTeeniepingTheme
-import com.sss.mysimilarteenieping.util.TestData // Added import for TestData
+import com.sss.mysimilarteenieping.util.TestData 
 import java.text.SimpleDateFormat
 import java.util.*
 import androidx.compose.foundation.background
@@ -82,8 +82,6 @@ fun ResultScreen(
                     actions = {
                         if (uiState is ResultUiState.Success) {
                             IconButton(onClick = {
-                                // TODO: 이미지 URI나 파일도 같이 공유하도록 개선 필요.
-                                // 현재는 Teenieping 이름과 정확도만 공유.
                                 val shareText = "나와 닮은 티니핑은 ${uiState.result.similarTeenieping.name}이래요! (정확도: ${String.format("%.0f", uiState.result.similarityScore * 100)}%)"
                                 onShareClick(shareText)
                             }) {
@@ -284,7 +282,7 @@ fun ShoppingLinkItemSkeleton() {
     Box(
         modifier = Modifier
             .fillMaxWidth()
-            .height(56.dp) // ShoppingLinkItem 높이와 유사하게
+            .height(56.dp) 
             .background(
                 color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f),
                 shape = RoundedCornerShape(8.dp)
@@ -298,7 +296,7 @@ fun ShoppingLinkItemSkeleton() {
         ) {
             Box(
                 modifier = Modifier
-                    .size(24.dp) // Icon size
+                    .size(24.dp)
                     .background(
                         color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.1f),
                         shape = RoundedCornerShape(4.dp)
@@ -308,7 +306,7 @@ fun ShoppingLinkItemSkeleton() {
             Box(
                 modifier = Modifier
                     .weight(1f)
-                    .height(20.dp) // Text height
+                    .height(20.dp)
                     .background(
                         color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.1f),
                         shape = RoundedCornerShape(4.dp)
@@ -363,7 +361,7 @@ fun ErrorStateView(
         )
         Spacer(modifier = Modifier.height(16.dp))
         Button(onClick = onRetryClick) {
-            Text(stringResource(id = R.string.button_retry)) // R.string.button_retry 정의 필요
+            Text(stringResource(id = R.string.button_retry))
         }
     }
 }
@@ -390,7 +388,6 @@ fun String.isHangulEquivalent(other: String): Boolean {
     return this.normalizeToNFC() == other.normalizeToNFC()
 }
 
-// Previews
 @Preview(showBackground = true, name = "Result Screen Success")
 @Composable
 fun ResultScreenPreview_Success() {
@@ -418,7 +415,7 @@ fun ResultScreenPreview_ShoppingLoading() {
                 result = TestData.resultScreenSuccessResult
             ),
             shoppingLinks = emptyList(),
-            isShoppingLoading = true, // 쇼핑 로딩 상태
+            isShoppingLoading = true, 
             onShoppingLinkClicked = {},
             onRetryClick = {},
             onBackClick = {},
@@ -435,7 +432,7 @@ fun ResultScreenPreview_NoShoppingLinks() {
             uiState = ResultUiState.Success(
                 result = TestData.resultScreenSuccessResult
             ),
-            shoppingLinks = emptyList(), // 쇼핑 링크 없음
+            shoppingLinks = emptyList(),
             isShoppingLoading = false,
             onShoppingLinkClicked = {},
             onRetryClick = {},
@@ -468,7 +465,7 @@ fun ResultScreenPreview_Loading() {
         ResultScreen(
             uiState = ResultUiState.Loading,
             shoppingLinks = emptyList(),
-            isShoppingLoading = false, // 기본 UI 로딩 중일 땐 쇼핑 로딩은 false일 수 있음
+            isShoppingLoading = false,
             onShoppingLinkClicked = {},
             onRetryClick = {},
             onBackClick = {},

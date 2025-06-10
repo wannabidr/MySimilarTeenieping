@@ -4,15 +4,14 @@ import com.sss.mysimilarteenieping.data.model.AnalysisResult
 import com.sss.mysimilarteenieping.data.model.ShoppingLink
 import com.sss.mysimilarteenieping.data.model.TeeniepingInfo
 import com.sss.mysimilarteenieping.data.model.UserImage
-import java.util.Date // Added for Date() constructor
+import java.util.Date 
 
 object TestData {
 
-    // For MainScreen Preview
     val dummyUserImage1 = UserImage(
         localFilePath = "/path/to/user_image1.jpg",
         fbFilePath = "https://firebasestorage.googleapis.com/v0/b/app.appspot.com/o/user_images%2Fimage1.jpg?alt=media",
-        createdAt = System.currentTimeMillis() - 2 * 24 * 60 * 60 * 1000 // 2 days ago
+        createdAt = System.currentTimeMillis() - 2 * 24 * 60 * 60 * 1000 
     )
 
     val dummyTeenieping1 = TeeniepingInfo(
@@ -26,7 +25,7 @@ object TestData {
         id = "result001",
         userImage = dummyUserImage1,
         similarTeenieping = dummyTeenieping1.copy(
-            description = dummyTeenieping1.description, // 원래 설명 유지
+            description = dummyTeenieping1.description, 
             details = "방글핑은 매우 긍정적이고 웃음이 많은 티니핑이랍니다. 주변에 행복을 나눠주는 것을 좋아해요! (ChatGPT 설명)"
         ),
         similarityScore = 0.85f,
@@ -51,7 +50,7 @@ object TestData {
     val dummyUserImage2 = UserImage(
         localFilePath = "/path/to/user_image2.jpg",
         fbFilePath = "https://firebasestorage.googleapis.com/v0/b/app.appspot.com/o/user_images%2Fimage2.jpg?alt=media",
-        createdAt = System.currentTimeMillis() - 1 * 24 * 60 * 60 * 1000 // 1 day ago
+        createdAt = System.currentTimeMillis() - 1 * 24 * 60 * 60 * 1000 
     )
 
     val dummyTeenieping2 = TeeniepingInfo(
@@ -83,7 +82,6 @@ object TestData {
         dummyResult2
     )
 
-    // For ResultScreen Preview (Success State)
     val resultScreenSuccessUserImage = UserImage(
         localFilePath = "local/path_res_preview.jpg",
         fbFilePath = "https://firebasestorage.googleapis.com/v0/b/app.appspot.com/o/user_images%2Fres_preview.jpg?alt=media",
@@ -106,7 +104,7 @@ object TestData {
         id = "res_preview_001",
         userImage = resultScreenSuccessUserImage,
         similarTeenieping = resultScreenSuccessTeenieping.copy(
-            description = resultScreenSuccessTeenieping.description, // 원래 설명 유지
+            description = resultScreenSuccessTeenieping.description, 
             details = "해핑은 반짝이는 햇살처럼 밝고 따뜻한 마음을 가졌어요. 언제나 친구들에게 웃음과 행복을 선물한답니다! (ChatGPT 설명)"
         ),
         similarityScore = 0.92f,

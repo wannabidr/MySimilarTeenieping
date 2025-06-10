@@ -3,9 +3,6 @@
     xmlns:tools="http://schemas.android.com/tools">
 
     <uses-permission android:name="android.permission.INTERNET" />
-    <!-- 카메라 사용 권한 (필요시 추가, Android 10 (API 29) 이상에서는 manifest에 없어도 되지만, 명시적으로 추가하는 것이 좋음) -->
-    <!-- <uses-permission android:name="android.permission.CAMERA" /> -->
-    <!-- <uses-feature android:name="android.hardware.camera" android:required="false" /> -->
 
     <application
         android:name=".MySimilarTeeniepingApp"
@@ -41,7 +38,6 @@
             android:theme="@style/Theme.MySimilarTeenieping">
         </activity>
 
-        <!-- FileProvider 정의 -->
         <provider
             android:name="androidx.core.content.FileProvider"
             android:authorities="${applicationId}.provider"

@@ -26,10 +26,10 @@ import android.util.Log
 private const val TAG = "SelectImageViewModel"
 
 sealed interface SelectImageUiState {
-    object Idle : SelectImageUiState // 초기 상태 또는 이미지 선택 대기
-    data class ImageSelected(val imageUri: Uri, val imageBitmap: Bitmap) : SelectImageUiState // 이미지 선택 완료
-    object Analyzing : SelectImageUiState // 분석 중
-    data class AnalysisSuccess(val analysisResultId: String) : SelectImageUiState // 분석 및 저장 성공 (결과 ID 반환)
+    object Idle : SelectImageUiState 
+    data class ImageSelected(val imageUri: Uri, val imageBitmap: Bitmap) : SelectImageUiState 
+    object Analyzing : SelectImageUiState 
+    data class AnalysisSuccess(val analysisResultId: String) : SelectImageUiState 
     data class AnalysisError(val message: String) : SelectImageUiState
 }
 
@@ -66,7 +66,6 @@ class SelectImageViewModel @Inject constructor(
         viewModelScope.launch {
             _uiState.value = SelectImageUiState.Analyzing
             try {
-                // 1. ML 모델로 유사 티니핑 분석
                 val (similarTeenieping, similarityScore) = getSimilarTeeniepingUseCase(bitmap)
 
                 if (similarTeenieping == null) {
@@ -75,7 +74,6 @@ class SelectImageViewModel @Inject constructor(
                 }
                 Log.d(TAG, "Teenieping classified: ${similarTeenieping.name}, Score: $similarityScore")
 
-                // 2. ChatGPT로 설명 가져오기 및 TeeniepingInfo.details에 저장
                 var enhancedTeenieping = similarTeenieping ?: return@launch
                 try {
                     Log.d(TAG, "Fetching ChatGPT description for: ${similarTeenieping.name}")
@@ -84,10 +82,10 @@ class SelectImageViewModel @Inject constructor(
                         val chatGptDescription = descriptionResult.getOrNull()
                         Log.d(TAG, "ChatGPT description fetched: $chatGptDescription")
 
-                        // ChatGPT 설명을 details 필드에 저장, description은 원래 값 유지
+                        
                         enhancedTeenieping = similarTeenieping.copy(
-                            description = similarTeenieping.description, // 원래 설명 유지
-                            details = chatGptDescription // ChatGPT 설명은 details에 저장
+                            description = similarTeenieping.description, 
+                            details = chatGptDescription 
                         )
                         Log.d(TAG, "Enhanced teenieping - description: ${enhancedTeenieping.description}")
                         Log.d(TAG, "Enhanced teenieping - details: ${enhancedTeenieping.details}")
@@ -98,7 +96,6 @@ class SelectImageViewModel @Inject constructor(
                     Log.e(TAG, "Error during ChatGPT description fetching", e)
                 }
 
-                // 2.5. ChatGPT로 이미지 비교 분석
                 var chatGptImageComparison = ""
                 try {
                     Log.d(TAG, "Fetching ChatGPT image comparison for: ${similarTeenieping.name}")
@@ -113,7 +110,6 @@ class SelectImageViewModel @Inject constructor(
                     Log.e(TAG, "Error during ChatGPT image comparison", e)
                 }
 
-                // 3. 네이버 쇼핑 API에서 관련 상품 링크 수집
                 val shoppingLinks = try {
                     Log.d(TAG, "Fetching shopping links for: ${similarTeenieping.name}")
                     val links = getShoppingInfoUseCase(similarTeenieping.name).first()
@@ -128,11 +124,9 @@ class SelectImageViewModel @Inject constructor(
                     Log.e(TAG, "Failed to fetch shopping links", e)
                     Log.e(TAG, "Exception details: ${e.message}")
                     Log.e(TAG, "Exception stackTrace: ${e.stackTrace.contentToString()}")
-                    // Fallback: 쇼핑 API 실패 시 더미 링크 생성
                     createFallbackShoppingLinks(similarTeenieping.name)
                 }
 
-                // 쇼핑 링크가 비어있다면 강제로 더미 데이터 추가
                 val finalShoppingLinks = if (shoppingLinks.isEmpty()) {
                     Log.w(TAG, "No shopping links found from API/Repository, creating fallback dummy links")
                     Log.w(TAG, "Original shoppingLinks size was: ${shoppingLinks.size}")
@@ -144,7 +138,6 @@ class SelectImageViewModel @Inject constructor(
 
                 Log.d(TAG, "Final shopping links count: ${finalShoppingLinks.size} items")
 
-                // 4. UserImage 및 AnalysisResult 객체 생성
                 val userImage = UserImage(
                     localFilePath = uri.toString(),
                     fbFilePath = "",
@@ -152,11 +145,11 @@ class SelectImageViewModel @Inject constructor(
                 )
                 val analysisResult = AnalysisResult(
                     userImage = userImage,
-                    similarTeenieping = enhancedTeenieping, // ChatGPT 설명이 포함된 TeeniepingInfo 사용
+                    similarTeenieping = enhancedTeenieping, 
                     similarityScore = similarityScore,
                     analysisTimestamp = Date().time,
-                    shoppingLinks = finalShoppingLinks, // 최종 쇼핑 링크 포함
-                    chatGptDescription = chatGptImageComparison // ChatGPT 이미지 비교 분석 결과
+                    shoppingLinks = finalShoppingLinks, 
+                    chatGptDescription = chatGptImageComparison 
                 )
                 Log.d(TAG, "AnalysisResult created with ${finalShoppingLinks.size} shopping links")
                 finalShoppingLinks.forEachIndexed { index, link ->
@@ -165,7 +158,6 @@ class SelectImageViewModel @Inject constructor(
                     Log.d(TAG, "AnalysisResult shopping store $index: ${link.storeName}")
                 }
 
-                // 5. 결과 저장 (Firestore 및 Storage)
                 val saveResult = saveAnalysisResultUseCase(uri, analysisResult)
 
                 if (saveResult.isSuccess) {

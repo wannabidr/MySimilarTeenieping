@@ -13,7 +13,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import com.sss.mysimilarteenieping.ui.result.ResultViewModel
-import com.sss.mysimilarteenieping.ui.result.composables.ResultScreen // 경로 확인 필요
+import com.sss.mysimilarteenieping.ui.result.composables.ResultScreen 
 import com.sss.mysimilarteenieping.ui.theme.MySimilarTeeniepingTheme
 import dagger.hilt.android.AndroidEntryPoint
 
@@ -25,7 +25,6 @@ class ResultActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        // val resultId = intent.getStringExtra("resultId") // ViewModel에서 SavedStateHandle로 처리
 
         setContent {
             MySimilarTeeniepingTheme {
@@ -43,15 +42,14 @@ class ResultActivity : ComponentActivity() {
                                 val intent = Intent(Intent.ACTION_VIEW, Uri.parse(url))
                                 startActivity(intent)
                             } catch (e: Exception) {
-                                // TODO: Handle invalid URL or no browser app (e.g., show a Toast)
                                 e.printStackTrace()
                             }
                         },
                         onRetryClick = {
-                            viewModel.loadResultDetails() // 에러 시 재시도
+                            viewModel.loadResultDetails() 
                         },
                         onBackClick = { finish() },
-                        onShareClick = { resultText -> // TODO: resultText 외에 이미지도 공유하도록 확장
+                        onShareClick = { resultText -> 
                             val sendIntent: Intent = Intent().apply {
                                 action = Intent.ACTION_SEND
                                 putExtra(Intent.EXTRA_TEXT, resultText)

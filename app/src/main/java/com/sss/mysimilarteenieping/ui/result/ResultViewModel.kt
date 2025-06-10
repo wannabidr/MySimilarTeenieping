@@ -67,7 +67,6 @@ class ResultViewModel @Inject constructor(
                     
                     _uiState.value = ResultUiState.Success(analysisResult)
                     
-                    // AnalysisResult에 이미 쇼핑 링크가 있으면 사용하고, 없으면 새로 가져오기
                     if (analysisResult.shoppingLinks.isNotEmpty()) {
                         Log.d(TAG, "Using saved shopping links from AnalysisResult: ${analysisResult.shoppingLinks.size} links")
                         analysisResult.shoppingLinks.forEachIndexed { index, link ->
@@ -102,7 +101,6 @@ class ResultViewModel @Inject constructor(
                     Log.e(TAG, "Error fetching shopping info", e)
                     _shoppingLinksState.value = emptyList()
                     _shoppingLoadingState.value = false
-                    // TODO: 사용자에게 쇼핑 정보 로드 실패 알림 (예: Toast 메시지)
                 }
                 .collect { links ->
                     Log.d(TAG, "Fetched ${links.size} shopping links in ResultViewModel")

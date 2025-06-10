@@ -158,7 +158,6 @@ fun SelectImageScreenPreview_Idle() {
 @Composable
 fun SelectImageScreenPreview_ImageSelected() {
     MySimilarTeeniepingTheme {
-        // Create a dummy bitmap for preview
         val context = LocalContext.current
         val dummyBitmap = Bitmap.createBitmap(100, 100, Bitmap.Config.ARGB_8888).apply {
             eraseColor(android.graphics.Color.LTGRAY)

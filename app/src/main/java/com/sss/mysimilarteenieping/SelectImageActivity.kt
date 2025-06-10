@@ -36,7 +36,6 @@ class SelectImageActivity : ComponentActivity() {
     private val viewModel: SelectImageViewModel by viewModels()
     private var tempImageUri: Uri? = null
 
-    // Photo Picker 결과 처리
     private val pickMediaLauncher = registerForActivityResult(ActivityResultContracts.PickVisualMedia()) { uri ->
         if (uri != null) {
             try {
@@ -47,15 +46,12 @@ class SelectImageActivity : ComponentActivity() {
                     viewModel.onImageSelected(uri, bitmap)
                 }
             } catch (e: Exception) {
-                // TODO: Handle exception (e.g., show error message)
                 e.printStackTrace()
             }
         } else {
-            // No media selected
         }
     }
 
-    // 카메라 결과 처리
     private val takePictureLauncher = registerForActivityResult(ActivityResultContracts.TakePicture()) { success ->
         if (success) {
             tempImageUri?.let { uri ->
@@ -64,12 +60,10 @@ class SelectImageActivity : ComponentActivity() {
                 }
             }
         } else {
-            // Picture wasn't taken or was cancelled
             tempImageUri = null
         }
     }
 
-    // 임시 이미지 파일을 생성하고 URI를 반환하는 함수
     private fun createImageFileUri(): Uri {
         val timeStamp: String = SimpleDateFormat("yyyyMMdd_HHmmss", Locale.getDefault()).format(Date())
         val imageFileName = "JPEG_${timeStamp}_"
@@ -118,7 +112,6 @@ class SelectImageActivity : ComponentActivity() {
                             startActivity(intent)
                             finish()
                         }
-                        // TODO: Handle AnalysisError state (e.g., show a Toast or Snackbar)
                     }
                 }
             }

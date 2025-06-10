@@ -136,8 +136,7 @@ fun MainScreen(
 @Composable
 fun MainScreenPreview() {
     MySimilarTeeniepingTheme {
-        // Mock ViewModel or provide dummy state for preview
-        val previewUiState = MainUiState.Success(TestData.previewHistoryList) // Use TestData
+        val previewUiState = MainUiState.Success(TestData.previewHistoryList) 
         val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
 
         ModalNavigationDrawer(
@@ -166,7 +165,7 @@ fun MainScreenPreview() {
 }
 
 @Composable
-fun ExtendedFAB(onClick: () -> Unit) { // Preview용 간이 FAB
+fun ExtendedFAB(onClick: () -> Unit) { 
     ExtendedFloatingActionButton(
         onClick = onClick,
         text = { Text("테스트 시작") },

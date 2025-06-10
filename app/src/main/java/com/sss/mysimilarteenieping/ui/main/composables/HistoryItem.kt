@@ -91,8 +91,8 @@ fun HistoryItem(
 fun HistoryItemPreview() {
     MySimilarTeeniepingTheme {
         val dummyUserImage = UserImage(
-            localFilePath = "", // Local path not used if fbFilePath is present
-            fbFilePath = "https://via.placeholder.com/150", // Example URL
+            localFilePath = "", 
+            fbFilePath = "https://via.placeholder.com/150",
             createdAt = Date().time
         )
         val dummyTeenieping = TeeniepingInfo(
