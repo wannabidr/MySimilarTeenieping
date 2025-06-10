@@ -17,6 +17,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.material.icons.filled.BrokenImage
 import androidx.compose.material.icons.filled.Image
@@ -28,6 +29,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import com.sss.mysimilarteenieping.R // For placeholder, error drawables and strings
@@ -35,6 +37,7 @@ import com.sss.mysimilarteenieping.data.model.AnalysisResult
 import com.sss.mysimilarteenieping.data.model.ShoppingLink
 import com.sss.mysimilarteenieping.data.model.TeeniepingInfo
 import com.sss.mysimilarteenieping.data.model.UserImage
+import com.sss.mysimilarteenieping.ui.common.GradientBox
 import com.sss.mysimilarteenieping.ui.result.ResultUiState
 import com.sss.mysimilarteenieping.ui.theme.MySimilarTeeniepingTheme
 import com.sss.mysimilarteenieping.util.TestData // Added import for TestData
@@ -48,7 +51,6 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.graphics.asImageBitmap
-import androidx.compose.ui.unit.sp
 import com.sss.mysimilarteenieping.ui.result.ResultViewModel
 import com.sss.mysimilarteenieping.BuildConfig
 import java.io.IOException
@@ -65,52 +67,55 @@ fun ResultScreen(
     onBackClick: () -> Unit,
     onShareClick: (String) -> Unit
 ) {
-    Scaffold(
-        topBar = {
-            TopAppBar(
-                title = { Text(stringResource(id = R.string.result_screen_title)) },
-                navigationIcon = {
-                    IconButton(onClick = onBackClick) {
-                        Icon(Icons.Filled.ArrowBack, contentDescription = stringResource(id = R.string.cd_navigate_back))
-                    }
-                },
-                actions = {
-                    if (uiState is ResultUiState.Success) {
-                        IconButton(onClick = {
-                            // TODO: 이미지 URI나 파일도 같이 공유하도록 개선 필요.
-                            // 현재는 Teenieping 이름과 정확도만 공유.
-                            val shareText = "나와 닮은 티니핑은 ${uiState.result.similarTeenieping.name}이래요! (정확도: ${String.format("%.0f", uiState.result.similarityScore * 100)}%)"
-                            onShareClick(shareText)
-                        }) {
-                            Icon(Icons.Filled.Share, contentDescription = stringResource(id = R.string.cd_share_result))
+    GradientBox {
+        Scaffold(
+            containerColor = Color.Transparent,
+            topBar = {
+                TopAppBar(
+                    title = { Text(stringResource(id = R.string.result_screen_title)) },
+                    colors = TopAppBarDefaults.topAppBarColors(containerColor = Color.Transparent),
+                    navigationIcon = {
+                        IconButton(onClick = onBackClick) {
+                            Icon(Icons.Filled.ArrowBack, contentDescription = stringResource(id = R.string.cd_navigate_back))
+                        }
+                    },
+                    actions = {
+                        if (uiState is ResultUiState.Success) {
+                            IconButton(onClick = {
+                                // TODO: 이미지 URI나 파일도 같이 공유하도록 개선 필요.
+                                // 현재는 Teenieping 이름과 정확도만 공유.
+                                val shareText = "나와 닮은 티니핑은 ${uiState.result.similarTeenieping.name}이래요! (정확도: ${String.format("%.0f", uiState.result.similarityScore * 100)}%)"
+                                onShareClick(shareText)
+                            }) {
+                                Icon(Icons.Filled.Share, contentDescription = stringResource(id = R.string.cd_share_result))
+                            }
                         }
                     }
-                }
-            )
-        }
-    ) {
-        paddingValues ->
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(paddingValues)
-                .padding(16.dp),
-            contentAlignment = Alignment.Center
-        ) {
-            when (uiState) {
-                is ResultUiState.Loading -> {
-                    CircularProgressIndicator()
-                }
-                is ResultUiState.Success -> {
-                    ResultContent(
-                        result = uiState.result,
-                        shoppingLinks = shoppingLinks,
-                        isShoppingLoading = isShoppingLoading,
-                        onShoppingLinkClicked = onShoppingLinkClicked
-                    )
-                }
-                is ResultUiState.Error -> {
-                    ErrorStateView(message = uiState.message, onRetryClick = onRetryClick)
+                )
+            }
+        ) { paddingValues ->
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(paddingValues)
+                    .padding(16.dp),
+                contentAlignment = Alignment.Center
+            ) {
+                when (uiState) {
+                    is ResultUiState.Loading -> {
+                        CircularProgressIndicator()
+                    }
+                    is ResultUiState.Success -> {
+                        ResultContent(
+                            result = uiState.result,
+                            shoppingLinks = shoppingLinks,
+                            isShoppingLoading = isShoppingLoading,
+                            onShoppingLinkClicked = onShoppingLinkClicked
+                        )
+                    }
+                    is ResultUiState.Error -> {
+                        ErrorStateView(message = uiState.message, onRetryClick = onRetryClick)
+                    }
                 }
             }
         }
@@ -131,75 +136,42 @@ fun ResultContent(
             .verticalScroll(scrollState),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        // User Image
-        AsyncImage(
-            model = ImageRequest.Builder(LocalContext.current)
-                .data(result.userImage.fbFilePath.ifEmpty { result.userImage.localFilePath })
-                .crossfade(true)
-                .build(),
-            placeholder = rememberVectorPainter(image = Icons.Filled.Image),
-            error = rememberVectorPainter(image = Icons.Filled.BrokenImage),
-            contentDescription = stringResource(id = R.string.cd_user_image),
+        Row(
+            horizontalArrangement = Arrangement.SpaceEvenly,
+            verticalAlignment = Alignment.CenterVertically,
             modifier = Modifier
                 .fillMaxWidth()
-                .aspectRatio(1f)
-                .clip(RoundedCornerShape(12.dp)),
-            contentScale = ContentScale.Crop
-        )
+                .padding(vertical = 16.dp)
+        ) {
+            ImageCard(
+                imageUrl = result.userImage.fbFilePath.ifEmpty { result.userImage.localFilePath },
+                label = "내 사진"
+            )
+            Text("💖", fontSize = 32.sp)
+            ImageCard(
+                imageUrl = "file:///android_asset/${result.similarTeenieping.imagePath.normalizeToNFC()}",
+                label = result.similarTeenieping.name
+            )
+        }
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        // Teenieping Info
         Text(
-            text = stringResource(id = R.string.result_your_teenieping_is), // R.string.result_your_teenieping_is 정의 필요
-            style = MaterialTheme.typography.headlineSmall
+            text = "✨짜잔! 당신과 닮은 티니핑은...✨",
+            style = MaterialTheme.typography.headlineSmall,
+            textAlign = TextAlign.Center
         )
         Text(
             text = result.similarTeenieping.name,
-            style = MaterialTheme.typography.displayMedium.copy(fontWeight = FontWeight.Bold),
-            color = MaterialTheme.colorScheme.primary
+            style = MaterialTheme.typography.displayMedium,
+            color = MaterialTheme.colorScheme.onBackground,
+            textAlign = TextAlign.Center
         )
         Text(
             text = "(정확도: ${String.format("%.0f", result.similarityScore * 100)}%)",
             style = MaterialTheme.typography.bodyLarge,
             modifier = Modifier.padding(bottom = 8.dp)
         )
-
-        val context = LocalContext.current
-
-        var teeniepingAssetPath = result.similarTeenieping.imagePath.normalizeToNFC()
-        var teeniepingImageUri by remember { mutableStateOf("file:///android_asset/$teeniepingAssetPath") }
-
-        // 디버깅 코드: 컴포저블이 로드될 때 asset 경로를 확인하고 Logcat에 출력합니다.
-        // Android Studio의 Logcat에서 "AssetDebugger" 태그로 필터링하여 확인할 수 있습니다.
-        LaunchedEffect(teeniepingAssetPath) {
-            Log.d("AssetDebugger", "Attempting to load asset from: $teeniepingAssetPath")
-            try {
-                context.assets.open(teeniepingAssetPath).use {
-                    Log.i("AssetDebugger", "Success! Asset found at path: $teeniepingAssetPath")
-                }
-            } catch (e: Exception) {
-                Log.w("AssetDebugger", "Error loading asset from path: $teeniepingAssetPath", e)
-                teeniepingAssetPath = result.similarTeenieping.imagePath.normalizeToNFD()
-                teeniepingImageUri = "file:///android_asset/$teeniepingAssetPath"
-            }
-        }
-
-        AsyncImage(
-            model = ImageRequest.Builder(LocalContext.current)
-                .data(teeniepingImageUri)
-                .crossfade(true)
-                .build(),
-            placeholder = rememberVectorPainter(image = Icons.Filled.Face),
-            error = rememberVectorPainter(image = Icons.Filled.BrokenImage),
-            contentDescription = result.similarTeenieping.name,
-            modifier = Modifier
-                .size(180.dp)
-                .clip(RoundedCornerShape(12.dp)),
-            contentScale = ContentScale.Fit
-        )
-
-        Spacer(modifier = Modifier.height(8.dp))
 
         Text(
             text = result.chatGptDescription ?: result.similarTeenieping.description,
@@ -208,7 +180,6 @@ fun ResultContent(
             modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
         )
 
-        // ChatGPT 생성 설명 표시 (details 필드)
         result.similarTeenieping.details?.let { details ->
             if (details.isNotBlank()) {
                 Spacer(modifier = Modifier.height(8.dp))
@@ -217,12 +188,11 @@ fun ResultContent(
                         .fillMaxWidth()
                         .padding(horizontal = 16.dp),
                     colors = CardDefaults.cardColors(
-                        containerColor = MaterialTheme.colorScheme.secondaryContainer
-                    )
+                        containerColor = MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.5f)
+                    ),
+                    shape = MaterialTheme.shapes.large
                 ) {
-                    Column(
-                        modifier = Modifier.padding(16.dp)
-                    ) {
+                    Column(modifier = Modifier.padding(16.dp)) {
                         Text(
                             text = "✨ 당신만을 위한 특별한 설명",
                             style = MaterialTheme.typography.titleSmall,
@@ -239,33 +209,15 @@ fun ResultContent(
                 }
             }
         }
+        
+        Divider(modifier = Modifier.padding(vertical = 16.dp))
 
-//        Text(
-//            text = "분석일시: ${SimpleDateFormat("yyyy-MM-dd HH:mm", Locale.getDefault()).format(Date(result.analysisTimestamp))}",
-//            style = MaterialTheme.typography.labelSmall,
-//            color = MaterialTheme.colorScheme.onSurfaceVariant,
-//            modifier = Modifier.padding(bottom = 16.dp)
-//        )
-
-        Divider()
-
-        // Shopping Links Section
         Spacer(modifier = Modifier.height(16.dp))
         Text(
             text = stringResource(id = R.string.result_shopping_links_title),
             style = MaterialTheme.typography.titleMedium,
             modifier = Modifier.padding(bottom = 8.dp)
         )
-        
-        // Debug info
-//        if (BuildConfig.DEBUG) {
-//            Text(
-//                text = "Debug: isLoading=$isShoppingLoading, linksCount=${shoppingLinks.size}",
-//                style = MaterialTheme.typography.bodySmall,
-//                color = MaterialTheme.colorScheme.error,
-//                modifier = Modifier.padding(4.dp)
-//            )
-//        }
         
         if (isShoppingLoading) {
             ShoppingLinksLoadingSkeletons()
@@ -284,6 +236,35 @@ fun ResultContent(
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 modifier = Modifier.padding(16.dp)
             )
+        }
+    }
+}
+
+@Composable
+fun ImageCard(imageUrl: String, label: String) {
+    Card(
+        shape = MaterialTheme.shapes.large,
+        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
+    ) {
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
+            modifier = Modifier.padding(8.dp)
+        ) {
+            AsyncImage(
+                model = ImageRequest.Builder(LocalContext.current)
+                    .data(imageUrl)
+                    .crossfade(true)
+                    .build(),
+                placeholder = rememberVectorPainter(image = Icons.Filled.Face),
+                error = rememberVectorPainter(image = Icons.Filled.BrokenImage),
+                contentDescription = label,
+                contentScale = ContentScale.Crop,
+                modifier = Modifier
+                    .size(140.dp)
+                    .clip(MaterialTheme.shapes.large)
+            )
+            Spacer(modifier = Modifier.height(8.dp))
+            Text(text = label, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
         }
     }
 }

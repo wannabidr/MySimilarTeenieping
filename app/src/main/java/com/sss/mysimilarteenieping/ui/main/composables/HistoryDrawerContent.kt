@@ -10,6 +10,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
@@ -31,27 +32,29 @@ fun HistoryDrawerContent(
     onRefresh: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    ModalDrawerSheet(modifier = modifier) {
+    ModalDrawerSheet(
+        modifier = modifier.fillMaxWidth(0.8f),
+        drawerContainerColor = MaterialTheme.colorScheme.background
+    ) {
         Column(
-            modifier = Modifier
-                .fillMaxHeight()
-                .padding(16.dp)
+            modifier = Modifier.fillMaxHeight()
         ) {
             Row(
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(16.dp),
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
                 Text(
-                    text = stringResource(id = R.string.history_drawer_title), // R.string.history_drawer_title 정의 필요
+                    text = stringResource(id = R.string.history_drawer_title),
                     style = MaterialTheme.typography.titleLarge,
-                    modifier = Modifier.padding(bottom = 16.dp)
                 )
                 IconButton(onClick = onRefresh) {
-                    Icon(Icons.Filled.Refresh, contentDescription = stringResource(id = R.string.cd_refresh_history)) // cd_refresh_history 정의 필요
+                    Icon(Icons.Filled.Refresh, contentDescription = stringResource(id = R.string.cd_refresh_history))
                 }
             }
-            Divider()
+            Divider(color = MaterialTheme.colorScheme.outline.copy(alpha = 0.5f))
 
             when (historyState) {
                 is MainUiState.Loading -> {
@@ -62,22 +65,31 @@ fun HistoryDrawerContent(
                 is MainUiState.Success -> {
                     if (historyState.history.isEmpty()) {
                         Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                            Text(stringResource(id = R.string.history_empty)) // history_empty 정의 필요
+                            Text(
+                                text = stringResource(id = R.string.history_empty),
+                                modifier = Modifier.padding(16.dp)
+                            )
                         }
                     } else {
-                        LazyColumn(modifier = Modifier.fillMaxSize()) {
-                            items(historyState.history) {
-                                result ->
+                        LazyColumn(
+                            modifier = Modifier.fillMaxSize(),
+                            contentPadding = PaddingValues(vertical = 8.dp)
+                        ) {
+                            items(historyState.history) { result ->
                                 HistoryItem(result = result, onClick = { onHistoryItemClick(result) })
-                                Divider()
                             }
                         }
                     }
                 }
                 is MainUiState.Error -> {
-                    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(16.dp),
+                        contentAlignment = Alignment.Center
+                    ) {
                         Text(
-                            text = stringResource(id = R.string.history_load_error, historyState.message), // history_load_error 정의 필요
+                            text = stringResource(id = R.string.history_load_error, historyState.message),
                             color = MaterialTheme.colorScheme.error,
                             textAlign = TextAlign.Center
                         )

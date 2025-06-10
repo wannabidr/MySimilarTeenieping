@@ -7,13 +7,13 @@ import com.google.gson.annotations.SerializedName
  */
 data class ChatGptRequest(
     @SerializedName("model")
-    val model: String = "gpt-3.5-turbo",
+    val model: String = "gpt-4o-mini",
     
     @SerializedName("messages")
     val messages: List<ChatMessage>,
     
     @SerializedName("max_tokens")
-    val maxTokens: Int = 150,
+    val maxTokens: Int = 300,
     
     @SerializedName("temperature")
     val temperature: Double = 0.7
