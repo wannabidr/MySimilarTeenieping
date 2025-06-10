@@ -21,6 +21,7 @@
         <activity
             android:name=".MainActivity"
             android:exported="true"
+            android:screenOrientation="sensorPortrait"
             android:theme="@style/Theme.MySimilarTeenieping">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -30,11 +31,13 @@
         <activity
             android:name=".ResultActivity"
             android:exported="false"
+            android:screenOrientation="sensorPortrait"
             android:theme="@style/Theme.MySimilarTeenieping">
         </activity>
         <activity
             android:name=".SelectImageActivity"
             android:exported="false"
+            android:screenOrientation="sensorPortrait"
             android:theme="@style/Theme.MySimilarTeenieping">
         </activity>
 

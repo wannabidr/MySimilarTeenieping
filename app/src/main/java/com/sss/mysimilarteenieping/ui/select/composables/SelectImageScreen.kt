@@ -43,7 +43,7 @@ fun SelectImageScreen(
                     title = { Text(stringResource(id = R.string.select_image_screen_title)) },
                     colors = TopAppBarDefaults.topAppBarColors(containerColor = Color.Transparent),
                     navigationIcon = {
-                        IconButton(onClick = onBackClick) {
+                        IconButton(onClick = onBackClick, enabled = uiState !is SelectImageUiState.Analyzing) {
                             Icon(Icons.Filled.ArrowBack, contentDescription = stringResource(id = R.string.cd_navigate_back))
                         }
                     }

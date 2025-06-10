@@ -21,6 +21,8 @@ import com.sss.mysimilarteenieping.ui.select.SelectImageUiState
 import com.sss.mysimilarteenieping.ui.select.SelectImageViewModel
 import com.sss.mysimilarteenieping.ui.select.composables.SelectImageScreen
 import com.sss.mysimilarteenieping.ui.theme.MySimilarTeeniepingTheme
+import com.sss.mysimilarteenieping.util.createImageFile
+import com.sss.mysimilarteenieping.util.getCorrectlyOrientedBitmap
 import dagger.hilt.android.AndroidEntryPoint
 import java.io.File
 import java.io.InputStream
@@ -57,16 +59,8 @@ class SelectImageActivity : ComponentActivity() {
     private val takePictureLauncher = registerForActivityResult(ActivityResultContracts.TakePicture()) { success ->
         if (success) {
             tempImageUri?.let { uri ->
-                try {
-                    val inputStream: InputStream? = contentResolver.openInputStream(uri)
-                    val bitmap = BitmapFactory.decodeStream(inputStream)
-                    inputStream?.close()
-                    if (bitmap != null) {
-                        viewModel.onImageSelected(uri, bitmap)
-                    }
-                } catch (e: Exception) {
-                    // TODO: Handle exception
-                    e.printStackTrace()
+                getCorrectlyOrientedBitmap(this, uri)?.let { bitmap ->
+                    viewModel.onImageSelected(uri, bitmap)
                 }
             }
         } else {
@@ -107,11 +101,7 @@ class SelectImageActivity : ComponentActivity() {
                         onCameraClick = {
                             val uri = createImageFileUri()
                             tempImageUri = uri
-                            tempImageUri?.let {
-                                takePictureLauncher.launch(it)
-                            } ?: run {
-                                android.widget.Toast.makeText(this@SelectImageActivity, "카메라를 실행할 수 없습니다.", android.widget.Toast.LENGTH_SHORT).show()
-                            }
+                            takePictureLauncher.launch(uri)
                         },
                         onAnalyzeClick = {
                             viewModel.startAnalysis()
