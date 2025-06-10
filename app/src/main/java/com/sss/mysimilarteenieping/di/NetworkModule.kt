@@ -17,9 +17,6 @@ import java.util.concurrent.TimeUnit
 import javax.inject.Qualifier
 import javax.inject.Singleton
 
-/**
- * Qualifier annotations for different OkHttpClient and Retrofit instances
- */
 @Qualifier
 @Retention(AnnotationRetention.BINARY)
 annotation class ChatGptOkHttpClient

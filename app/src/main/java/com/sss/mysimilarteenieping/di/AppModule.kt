@@ -25,8 +25,4 @@ object AppModule {
     fun provideGson(): Gson {
         return GsonBuilder().create()
     }
-
-    // Add other application-wide bindings here if necessary
-    // e.g., SharedPreferences, Dispatchers, etc.
-
 } 

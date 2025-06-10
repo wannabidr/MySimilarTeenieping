@@ -2,9 +2,6 @@ package com.sss.mysimilarteenieping.data.model
 
 import com.google.gson.annotations.SerializedName
 
-/**
- * ChatGPT API 응답을 위한 데이터 모델
- */
 data class ChatGptResponse(
     @SerializedName("id")
     val id: String,
@@ -25,9 +22,6 @@ data class ChatGptResponse(
     val usage: Usage?
 )
 
-/**
- * ChatGPT 응답의 선택지 구조
- */
 data class Choice(
     @SerializedName("index")
     val index: Int,

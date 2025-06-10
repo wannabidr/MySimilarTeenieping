@@ -2,9 +2,6 @@ package com.sss.mysimilarteenieping.data.model
 
 import com.google.gson.annotations.SerializedName
 
-/**
- * 네이버 쇼핑 API 응답 모델
- */
 data class NaverShoppingResponse(
     @SerializedName("lastBuildDate")
     val lastBuildDate: String,
@@ -22,9 +19,6 @@ data class NaverShoppingResponse(
     val items: List<NaverShoppingItem>
 )
 
-/**
- * 네이버 쇼핑 API 상품 아이템
- */
 data class NaverShoppingItem(
     @SerializedName("title")
     val title: String,

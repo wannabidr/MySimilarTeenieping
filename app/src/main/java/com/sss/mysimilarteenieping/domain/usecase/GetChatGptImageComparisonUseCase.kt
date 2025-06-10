@@ -5,19 +5,9 @@ import com.sss.mysimilarteenieping.data.model.TeeniepingInfo
 import com.sss.mysimilarteenieping.data.repository.ChatGptRepository
 import javax.inject.Inject
 
-/**
- * ChatGPT를 사용하여 사용자 이미지와 매칭된 티니핑 이미지를 비교 분석하는 UseCase
- */
 class GetChatGptImageComparisonUseCase @Inject constructor(
     private val chatGptRepository: ChatGptRepository
 ) {
-    /**
-     * 사용자 이미지와 티니핑 이미지를 ChatGPT에게 보내서 닮은 부분을 분석
-     * 
-     * @param userImage 사용자가 업로드한 이미지
-     * @param teeniepingInfo 매칭된 티니핑 정보
-     * @return ChatGPT의 비교 분석 설명
-     */
     suspend operator fun invoke(
         userImage: Bitmap,
         teeniepingInfo: TeeniepingInfo
@@ -41,7 +31,6 @@ class GetChatGptImageComparisonUseCase @Inject constructor(
                 예시: "둥글둥글한 얼굴과 큰 눈이 ${teeniepingInfo.name}와 정말 닮았어요! 특히 밝고 맑은 표정이 똑같아서 깜짝 놀랐답니다."
             """.trimIndent()
             
-            // ChatGPT Vision API를 사용하여 이미지 비교 분석
             val result = chatGptRepository.getImageComparison(userImage, teeniepingInfo, prompt)
             result
         } catch (e: Exception) {

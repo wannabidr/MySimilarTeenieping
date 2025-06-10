@@ -10,23 +10,8 @@ import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
 interface ChatGptRepository {
-    /**
-     * 주어진 티니핑 이름과 선택적 사용자 이미지 특징을 기반으로 설명을 생성합니다.
-     *
-     * @param teeniepingName 설명을 생성할 티니핑의 이름
-     * @param userImageFeatures (선택 사항) 사용자 이미지에서 추출된 특징들
-     * @return Result<String> 성공 시 설명을 담은 Result, 실패 시 오류를 담은 Result
-     */
     suspend fun generateDescription(teeniepingName: String, userImageFeatures: String? = null): Result<String>
 
-    /**
-     * 사용자 이미지와 티니핑 이미지를 비교하여 닮은 부분을 분석합니다.
-     *
-     * @param userImage 사용자가 업로드한 이미지
-     * @param teeniepingInfo 매칭된 티니핑 정보
-     * @param prompt 분석을 위한 프롬프트
-     * @return Result<String> 성공 시 비교 분석 설명을 담은 Result, 실패 시 오류를 담은 Result
-     */
     suspend fun getImageComparison(userImage: Bitmap, teeniepingInfo: TeeniepingInfo, prompt: String): Result<String>
 }
 
@@ -36,10 +21,8 @@ class ChatGptRepositoryImpl @Inject constructor(
 
     override suspend fun generateDescription(teeniepingName: String, userImageFeatures: String?): Result<String> = withContext(Dispatchers.IO) {
         try {
-            // 1. 프롬프트 생성
             val prompt = createPrompt(teeniepingName, userImageFeatures)
             
-            // 2. ChatGPT API 요청 생성
             val request = ChatGptRequest(
                 model = "gpt-3.5-turbo",
                 messages = listOf(
@@ -56,10 +39,8 @@ class ChatGptRepositoryImpl @Inject constructor(
                 temperature = 0.7
             )
             
-            // 3. API 호출
             val response = chatGptApiService.createChatCompletion(request)
             
-            // 4. 응답 처리
             if (response.isSuccessful) {
                 val chatGptResponse = response.body()
                 val description = chatGptResponse?.choices?.firstOrNull()?.message?.content
@@ -88,7 +69,6 @@ class ChatGptRepositoryImpl @Inject constructor(
         return buildString {
             append("다음 티니핑에 대해 아이들에게 친근하고 재미있게 설명해주세요: $teeniepingName")
             
-            // userImageFeatures가 있다면 추가 정보로 활용
             userImageFeatures?.let { features ->
                 append("\n사용자 이미지 특징: $features")
                 append("\n이 특징을 반영하여 왜 이 티니핑과 닮았는지 설명해주세요.")
@@ -106,8 +86,6 @@ class ChatGptRepositoryImpl @Inject constructor(
 
     override suspend fun getImageComparison(userImage: Bitmap, teeniepingInfo: TeeniepingInfo, prompt: String): Result<String> = withContext(Dispatchers.IO) {
         try {
-            // 현재는 Vision API 구현이 복잡하므로, 텍스트 기반으로 임시 구현
-            // 실제 Vision API 구현 시 이 부분을 교체할 수 있음
             val fallbackPrompt = """
                 사용자가 "${teeniepingInfo.name}" 티니핑과 닮았다고 분석되었습니다.
                 
@@ -144,20 +122,17 @@ class ChatGptRepositoryImpl @Inject constructor(
                 val description = chatGptResponse?.choices?.firstOrNull()?.message?.content
                 
                 if (description.isNullOrBlank()) {
-                    // Fallback 설명 제공
                     val fallbackDescription = "당신의 밝고 사랑스러운 표정이 ${teeniepingInfo.name}와 정말 닮았어요! 특히 눈에서 나오는 따뜻한 기운이 똑같답니다."
                     Result.success(fallbackDescription)
                 } else {
                     Result.success(description.trim())
                 }
             } else {
-                // API 실패 시 fallback 설명 제공
                 val fallbackDescription = "당신의 사랑스러운 모습이 ${teeniepingInfo.name}와 정말 닮았어요! 밝은 표정과 따뜻한 분위기가 똑같답니다."
                 Result.success(fallbackDescription)
             }
             
         } catch (e: Exception) {
-            // 예외 발생 시도 fallback 설명 제공
             val fallbackDescription = "당신의 특별한 매력이 ${teeniepingInfo.name}와 정말 닮았어요! 긍정적인 에너지가 똑같이 느껴진답니다."
             Result.success(fallbackDescription)
         }
