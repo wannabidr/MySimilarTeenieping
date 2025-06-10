@@ -115,48 +115,4 @@ class ShoppingRepositoryImpl @Inject constructor(
             .replace("&gt;", ">")
             .trim()
     }
-    
-    private fun getDummyShoppingLinks(query: String): List<ShoppingLink> {
-        Log.d(TAG, "Generating dummy shopping links for: $query")
-        Log.w(TAG, "Using dummy data - API may have failed or returned no results")
-        
-        return listOf(
-            ShoppingLink(
-                itemName = "$query 티니핑 피규어 세트 (정품)",
-                linkUrl = "https://shopping.naver.com/window-products/8394728462", // 실제 형태의 URL
-                itemImageUrl = "https://shopping.phinf.naver.net/main_8394728/83947284625.jpg", // 실제 형태의 이미지 URL
-                storeName = "티니핑 공식 스토어"
-            ),
-            ShoppingLink(
-                itemName = "$query 티니핑 봉제인형 30cm",
-                linkUrl = "https://shopping.naver.com/window-products/8394728463",
-                itemImageUrl = "https://shopping.phinf.naver.net/main_8394729/83947294625.jpg",
-                storeName = "키즈 랜드"
-            ),
-            ShoppingLink(
-                itemName = "$query 티니핑 키링 컬렉션 5종 세트",
-                linkUrl = "https://shopping.naver.com/window-products/8394728464",
-                itemImageUrl = "https://shopping.phinf.naver.net/main_8394730/83947304625.jpg",
-                storeName = "캐릭터 월드"
-            ),
-            ShoppingLink(
-                itemName = "$query 티니핑 스티커북 + 스티커 세트",
-                linkUrl = "https://shopping.naver.com/window-products/8394728465",
-                itemImageUrl = "https://shopping.phinf.naver.net/main_8394731/83947314625.jpg",
-                storeName = "문구나라"
-            ),
-            ShoppingLink(
-                itemName = "$query 티니핑 캐릭터 백팩 (어린이용)",
-                linkUrl = "https://shopping.naver.com/window-products/8394728466",
-                itemImageUrl = "https://shopping.phinf.naver.net/main_8394732/83947324625.jpg",
-                storeName = "베이비 스토어"
-            ),
-            ShoppingLink(
-                itemName = "$query 티니핑 문구용품 세트 (연필, 지우개, 자)",
-                linkUrl = "https://shopping.naver.com/window-products/8394728467",
-                itemImageUrl = "https://shopping.phinf.naver.net/main_8394733/83947334625.jpg",
-                storeName = "스마트 문구"
-            )
-        )
-    }
-} 
+}

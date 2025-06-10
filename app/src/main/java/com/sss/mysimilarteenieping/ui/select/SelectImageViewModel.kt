@@ -124,13 +124,13 @@ class SelectImageViewModel @Inject constructor(
                     Log.e(TAG, "Failed to fetch shopping links", e)
                     Log.e(TAG, "Exception details: ${e.message}")
                     Log.e(TAG, "Exception stackTrace: ${e.stackTrace.contentToString()}")
-                    createFallbackShoppingLinks(similarTeenieping.name)
+                    listOf()
                 }
 
                 val finalShoppingLinks = if (shoppingLinks.isEmpty()) {
                     Log.w(TAG, "No shopping links found from API/Repository, creating fallback dummy links")
                     Log.w(TAG, "Original shoppingLinks size was: ${shoppingLinks.size}")
-                    createFallbackShoppingLinks(similarTeenieping.name)
+                    listOf()
                 } else {
                     Log.d(TAG, "Using real shopping links from API: ${shoppingLinks.size} items")
                     shoppingLinks
@@ -175,50 +175,4 @@ class SelectImageViewModel @Inject constructor(
             }
         }
     }
-
-    /**
-     * 쇼핑 API 실패 시 사용할 fallback 더미 데이터 생성
-     */
-    private fun createFallbackShoppingLinks(teeniepingName: String): List<ShoppingLink> {
-        Log.w(TAG, "🚨 CREATING FALLBACK DUMMY DATA for: $teeniepingName")
-        Log.w(TAG, "🚨 This means the real Naver Shopping API failed or returned empty results")
-        return listOf(
-            ShoppingLink(
-                itemName = "$teeniepingName 티니핑 피규어 세트 (정품)",
-                linkUrl = "https://shopping.naver.com/window-products/fallback-${teeniepingName.hashCode()}01",
-                itemImageUrl = "https://shopping.phinf.naver.net/main_fallback/${teeniepingName.hashCode()}01/figure.jpg",
-                storeName = "티니핑 공식 스토어"
-            ),
-            ShoppingLink(
-                itemName = "$teeniepingName 티니핑 봉제인형 30cm",
-                linkUrl = "https://shopping.naver.com/window-products/fallback-${teeniepingName.hashCode()}02",
-                itemImageUrl = "https://shopping.phinf.naver.net/main_fallback/${teeniepingName.hashCode()}02/plush.jpg",
-                storeName = "키즈 랜드"
-            ),
-            ShoppingLink(
-                itemName = "$teeniepingName 티니핑 키링 컬렉션 5종 세트",
-                linkUrl = "https://shopping.naver.com/window-products/fallback-${teeniepingName.hashCode()}03",
-                itemImageUrl = "https://shopping.phinf.naver.net/main_fallback/${teeniepingName.hashCode()}03/keyring.jpg",
-                storeName = "캐릭터 월드"
-            ),
-            ShoppingLink(
-                itemName = "$teeniepingName 티니핑 스티커북 + 스티커 세트",
-                linkUrl = "https://shopping.naver.com/window-products/fallback-${teeniepingName.hashCode()}04",
-                itemImageUrl = "https://shopping.phinf.naver.net/main_fallback/${teeniepingName.hashCode()}04/sticker.jpg",
-                storeName = "문구나라"
-            ),
-            ShoppingLink(
-                itemName = "$teeniepingName 티니핑 캐릭터 백팩 (어린이용)",
-                linkUrl = "https://shopping.naver.com/window-products/fallback-${teeniepingName.hashCode()}05",
-                itemImageUrl = "https://shopping.phinf.naver.net/main_fallback/${teeniepingName.hashCode()}05/backpack.jpg",
-                storeName = "베이비 스토어"
-            ),
-            ShoppingLink(
-                itemName = "$teeniepingName 티니핑 문구용품 세트 (연필, 지우개, 자)",
-                linkUrl = "https://shopping.naver.com/window-products/fallback-${teeniepingName.hashCode()}06",
-                itemImageUrl = "https://shopping.phinf.naver.net/main_fallback/${teeniepingName.hashCode()}06/stationery.jpg",
-                storeName = "스마트 문구"
-            )
-        )
-    }
-} 
+}
